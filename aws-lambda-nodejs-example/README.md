@@ -49,8 +49,8 @@ The SAM CLI can also emulate your application's API. Use the `sam local start-ap
 
 ```bash
 sam local start-api
-curl http://localhost:3000/
-curl http://localhost:3000/ | jq
+
+curl http://localhost:3000/hello
 ```
 
 The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
@@ -62,6 +62,14 @@ Events:
     Properties:
       Path: /hello
       Method: get
+```
+
+## Deploy
+
+```sh
+sam deploy --guided
+
+curl https://<API_ID>.execute-api.<AWS_REGION>.amazonaws.com/Prod/hello | jq
 ```
 
 ## Add a resource to your application

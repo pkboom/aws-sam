@@ -1,10 +1,10 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   aws-lambda-nodejs-example
 
   Sample SAM Template for aws-lambda-nodejs-example
-  
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
@@ -25,6 +25,20 @@ Resources:
           Properties:
             Path: /hello
             Method: get
+  QuotesScraperFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: quotes-scraper/
+      Handler: app.lambdaHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Events:
+        QuotesScraper:
+          Type: Api
+          Properties:
+            Path: /quotes
+            Method: get
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
@@ -39,3 +53,12 @@ Outputs:
   HelloWorldFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
     Value: !GetAtt HelloWorldFunctionRole.Arn
+  QuotesScraperApi:
+    Description: "API Gateway endpoint URL for Prod stage for Quotes Scraper function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/quotes/"
+  QuotesScraperFunction:
+    Description: "Quotes Scraper Function ARN"
+    Value: !GetAtt QuotesScraperFunction.Arn
+  QuotesScraperFunctionIamRole:
+    Description: "Implicit IAM Role created for Quotes Scraper function"
+    Value: !GetAtt QuotesScraperFunctionRole.Arn
