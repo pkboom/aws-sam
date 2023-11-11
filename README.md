@@ -32,6 +32,17 @@ aws configure list
 aws configure list --profile inbox_monster_dev
 ```
 
+# Make profile default
+
+```
+# ~/.zshrc
+
+export AWS_PROFILE=<profile-name>
+
+e.g.
+export AWS_PROFILE=inbox_monster_dev
+```
+
 # Create Lambda Function
 
 ```sh
