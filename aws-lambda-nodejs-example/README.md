@@ -11,6 +11,7 @@ To build and deploy your application for the first time, run the following in yo
 ```bash
 sam build
 sam deploy --guided
+sam deploy --guided --profile inbox_monster_dev
 ```
 
 The second command will package and deploy your application to AWS, with a series of prompts:
@@ -68,6 +69,7 @@ Events:
 
 ```sh
 sam deploy --guided
+sam deploy --guided --profile inbox_monster_dev
 
 curl https://<API_ID>.execute-api.<AWS_REGION>.amazonaws.com/Prod/hello | jq
 ```
