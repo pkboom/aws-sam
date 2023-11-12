@@ -178,6 +178,8 @@ npm run test
 ```bash
 sam delete
 
+sam delete --no-prompts
+
 sam delete --stack-name aws-lambda-nodejs-example
 ```
 
