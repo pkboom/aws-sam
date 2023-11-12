@@ -45,11 +45,15 @@ For more info, please view https://docs.aws.amazon.com/AmazonCloudWatch/latest/m
 
 https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli-local.html
 
-Invoke serverless application.
-
 > Run docker first.
 
-```bash
+Invoke serverless application.
+
+```sh
+sam local invoke HelloWorldFunction
+
+sam local invoke HelloWorldFunction | jq
+
 sam local invoke HelloWorldFunction --event events/event.json
 ```
 
@@ -65,14 +69,6 @@ curl http://localhost:3000/hello
 ```
 
 ## Deploy the sample application
-
-To use the SAM CLI, you need the following tools.
-
-- SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-- Node.js - [Install Node.js 18](https://nodejs.org/en/), including the NPM package management tool.
-- Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
-
-To build and deploy your application for the first time, run the following in your shell:
 
 ```bash
 sam build

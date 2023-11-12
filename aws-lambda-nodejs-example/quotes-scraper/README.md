@@ -33,7 +33,3 @@ Output:
 ```
 
 sam build
-
-sam local invoke "QuotesScraperFunction"
-
-sam local invoke "QuotesScraperFunction" | jq
