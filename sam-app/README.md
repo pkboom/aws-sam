@@ -1,20 +1,17 @@
-Create lambda
-
 ```sh
 sam init --runtime nodejs18.x --name sqs-lambda-app
-```
 
-Deploy
-
-```sh
 sam validate
+
 sam validate --template template.yaml
+
 sam build
 
 # Run docker first.
 sam local invoke "Lambda1" --event events/event.json
 
 sam deploy -g
+
 sam deploy --guided --profile inbox_monster_dev
 ```
 
