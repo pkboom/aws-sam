@@ -41,9 +41,28 @@ Would you like to enable monitoring using CloudWatch Application Insights?
 For more info, please view https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch-application-insights.html [y/N]: N
 ```
 
-## Test lambda locally
+# Local test
 
 https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli-local.html
+
+Invoke serverless application.
+
+> Run docker first.
+
+```bash
+sam local invoke HelloWorldFunction --event events/event.json
+```
+
+Emulate your application's API locally on port 3000.
+
+> Run docker first.
+
+```bash
+sam local start-api
+
+e.g.
+curl http://localhost:3000/hello
+```
 
 ## Deploy the sample application
 
@@ -93,26 +112,6 @@ sam build
 ```
 
 The SAM CLI installs dependencies defined in `hello-world/package.json`, creates a deployment package, and saves it in the `.aws-sam/build` folder.
-
-Test a single function by invoking it directly with a test event. An event is a JSON document that represents the input that the function receives from the event source. Test events are included in the `events` folder in this project.
-
-Run functions locally and invoke them with the `sam local invoke` command.
-
-> Run docker first.
-
-```bash
-sam local invoke HelloWorldFunction --event events/event.json
-```
-
-The SAM CLI can also emulate your application's API. Use the `sam local start-api` to run the API locally on port 3000.
-
-> Run docker first.
-
-```bash
-sam local start-api
-
-curl http://localhost:3000/hello
-```
 
 The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
 
