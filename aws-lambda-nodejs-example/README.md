@@ -1,5 +1,7 @@
 # Create Lambda Function
 
+https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started-hello-world.html
+
 ```sh
 sam init --runtime nodejs18.x --name aws-lambda-nodejs-example
 ```
@@ -38,8 +40,6 @@ Would you like to enable X-Ray tracing on the function(s) in your application?  
 Would you like to enable monitoring using CloudWatch Application Insights?
 For more info, please view https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch-application-insights.html [y/N]: N
 ```
-
-https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started-hello-world.html
 
 https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli-local-start-lambda.html
 
