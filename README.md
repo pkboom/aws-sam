@@ -93,3 +93,11 @@ https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/u
 ### AWS::Serverless::Function
 
 https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
+
+# Query CloudFormation Stack
+
+```sh
+aws cloudformation describe-stacks --query 'Stacks[].Outputs'
+aws cloudformation describe-stacks --query 'Stacks[].Outputs[?OutputKey==`SqsLambdaSqs`]'
+aws cloudformation describe-stacks --query 'Stacks[].Outputs[?OutputKey==`SqsLambdaSqs`].OutputValue[]'
+```
