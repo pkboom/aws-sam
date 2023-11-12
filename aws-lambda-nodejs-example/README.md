@@ -1,7 +1,5 @@
 # Create Lambda Function
 
-## Initialize lambda function
-
 ```sh
 sam init --runtime nodejs18.x --name aws-lambda-nodejs-example
 ```
