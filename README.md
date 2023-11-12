@@ -10,9 +10,9 @@ sam --version
 
 # Setup aws credentials
 
-(Creating new access keys for an IAM user)[https://docs.aws.amazon.com/keyspaces/latest/devguide/access.credentials.html#create.keypair]
+[Creating new access keys for an IAM user](https://docs.aws.amazon.com/keyspaces/latest/devguide/access.credentials.html#create.keypair)
 
-(Set and view configuration settings using commands)[https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-methods]
+[Set and view configuration settings using commands](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-methods)
 
 ```sh
 aws configure

@@ -6,11 +6,20 @@ if ! which -s sam; then
   exit 1
 fi
 
-stack_name='HelloWorld'
+# If we don't have 2 arguments passed,
+# print usage and exit with error code
+if [ $# -lt 1 ]; then
+  echo >&2 "
+Usage: ./deploy <stack_name>
 
-cd sam-app
+e.g. ./deploy sam-app 
+"
+  exit 1
+fi
 
-# bash -x deploy.sh: prints each command before executing it
+cd "$1"
+
+# bash -x deploy.sh: prints each command of a script before executing it
 
 # -x: print each command before executing it until `set +x` is called
 set -x
@@ -23,3 +32,5 @@ sam build
 sam deploy \
   --stack-name $stack_name \
   --capabilities CAPABILITY_IAM
+
+cd -
