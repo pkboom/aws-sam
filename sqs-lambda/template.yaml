@@ -30,6 +30,8 @@ Resources:
           Properties:
             Queue: !GetAtt SqsLambdaSqs.Arn
             BatchSize: 1
+      Tags:
+        Env: dev
 
   SqsLambdaSqs:
     Type: AWS::SQS::Queue
