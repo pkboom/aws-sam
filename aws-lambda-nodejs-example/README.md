@@ -106,6 +106,7 @@ npm run test
 To delete the sample application that you created, use the AWS CLI. Assuming you used your project name for the stack name, you can run the following:
 
 ```bash
+sam delete
 sam delete --stack-name aws-lambda-nodejs-example
 ```
 
