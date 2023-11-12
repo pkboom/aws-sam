@@ -8,6 +8,7 @@ Deploy
 
 ```sh
 sam validate
+sam validate --template template.yaml
 sam build
 
 # Run docker first.

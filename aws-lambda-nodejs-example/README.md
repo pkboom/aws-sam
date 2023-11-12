@@ -12,6 +12,7 @@ To build and deploy your application for the first time, run the following in yo
 sam build
 sam deploy --guided
 sam deploy --guided --profile inbox_monster_dev
+sam deploy --template-file packaged.yaml --stack-name HelloWorld --capabilities CAPABILITY_IAM
 ```
 
 The second command will package and deploy your application to AWS, with a series of prompts:
