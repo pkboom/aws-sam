@@ -5,14 +5,9 @@ sam validate
 
 sam validate --template template.yaml
 
-sam build
 
-# Run docker first.
-sam local invoke "Lambda1" --event events/event.json
 
-sam deploy -g
 
-sam deploy --guided --profile inbox_monster_dev
 ```
 
 ```bash
@@ -38,11 +33,3 @@ sam logs -n Lambda1 --profile inbox_monster_dev
 https://engineering.surveysparrow.com/build-a-serverless-application-using-aws-lambda-api-gateway-sqs-and-deploy-using-aws-sam-be56a0617a30
 
 https://medium.com/tuimm/using-aws-sam-to-build-and-deploy-an-application-with-sns-sqs-and-lambda-services-91e909b0f1d2
-
-### Display output
-
-Displays the outputs of your AWS CloudFormation stack from an AWS Serverless Application Model (AWS SAM) or AWS CloudFormation template
-
-```sh
-sam list stack-outputs
-```

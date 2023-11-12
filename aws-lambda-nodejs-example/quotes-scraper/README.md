@@ -31,5 +31,3 @@ Output:
     Description: "Implicit IAM Role created for Quotes Scraper function"
     Value: !GetAtt QuotesScraperFunctionRole.Arn
 ```
-
-sam build
