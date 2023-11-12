@@ -149,6 +149,7 @@ sam list stack-outputs
 
 # api endpoints
 sam list endpoints
+
 sam list endpoints --output json
 ```
 
@@ -159,7 +160,11 @@ https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/s
 > This command works for all AWS Lambda functions; not just the ones you deploy using SAM.
 
 ```bash
+sam logs -n HelloWorldFunction
+
 sam logs -n HelloWorldFunction --stack-name aws-lambda-nodejs-example --tail
+
+sam logs -n HelloWorldFunction --stack-name aws-lambda-nodejs-example --debug
 ```
 
 # Unit tests
@@ -185,4 +190,26 @@ aws cloudformation describe-stacks --query 'Stacks[].Outputs'
 aws cloudformation describe-stacks --query 'Stacks[].Outputs[?OutputKey==`SqsLambdaSqs`]'
 
 aws cloudformation describe-stacks --query 'Stacks[].Outputs[?OutputKey==`SqsLambdaSqs`].OutputValue[]'
+```
+
+# SQS
+
+Send a message to sqs
+
+```sh
+aws sqs send-message --queue-url "https://sqs.us-east-2.amazonaws.com/524978277775/sam-app-Lambda2Sqs-L4oXiYmo4QKb" --message-body "hello from sqs-lambda trigger" --profile inbox_monster_dev
+```
+
+# Dev
+
+```sh
+sam init --runtime nodejs18.x --name <sam-app-name>
+
+cd <sam-app-name>
+
+mv hello-world <lambda>
+
+cd <lambda>
+
+npm i
 ```
