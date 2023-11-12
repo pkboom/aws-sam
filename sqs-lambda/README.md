@@ -21,5 +21,7 @@ aws sqs send-message --queue-url "https://sqs.us-east-2.amazonaws.com/5249782777
 
 sam logs -n SqsLambdaFunction --tail
 sam logs --name SqsLambdaFunction
-
 sam logs -n SqsLambdaFunction --stack-name myStack --tail
+
+If we want to see debug output:
+sam logs -n HelloWorldFunction --stack-name HelloWorld --debug
