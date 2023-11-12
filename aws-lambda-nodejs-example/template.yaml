@@ -11,6 +11,9 @@ Globals:
     Timeout: 3
 
 Resources:
+  # lambda function has a Policies property that the CloudFormation function doesn’t have.
+  # By specifying a list of IAM Policies on the AWS::Serverless::Function type, these are
+  # added to the default role.
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -44,12 +47,17 @@ Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  # Implict API can be referenced within the template using the special variable ${ServerlessRestApi}.
+  # Default stage named “Prod” is created that cannot be configured.
   HelloWorldApi:
     Description: 'API Gateway endpoint URL for Prod stage for Hello World function'
     Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/'
   HelloWorldFunction:
     Description: 'Hello World Lambda Function ARN'
     Value: !GetAtt HelloWorldFunction.Arn
+  #  As with the implicit API, this default IAM Role is created silently unless you refer
+  # via the Role property of the function resource to either an IAM Role that you define explicitly
+  # in the template or to an IAM Role that is otherwise known to exist.
   HelloWorldFunctionIamRole:
     Description: 'Implicit IAM Role created for Hello World function'
     Value: !GetAtt HelloWorldFunctionRole.Arn
