@@ -1,5 +1,6 @@
-const AWS = require('aws-sdk')
-const sqs = new AWS.SQS({
+import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs'
+
+const sqs = new SQSClient({
   // We can store these credentials in lambda environment variables
   accessKeyId: process.env.ACCESS_KEY,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -7,7 +8,7 @@ const sqs = new AWS.SQS({
   region: process.env.AWS_REGION,
 })
 
-module.exports.constructDataForSqs = (body, options = {}) => {
+export const constructDataForSqs = (body, options = {}) => {
   if (!options.queueUrl) {
     throw new Error('QueueUrl not given')
   }
@@ -16,6 +17,7 @@ module.exports.constructDataForSqs = (body, options = {}) => {
   }
 
   let MessageAttributes = {}
+
   if (options.messageAttributes) {
     for (const key of Object.keys(options.messageAttributes)) {
       MessageAttributes[key] = {
@@ -24,21 +26,29 @@ module.exports.constructDataForSqs = (body, options = {}) => {
       }
     }
   }
+
   const params = {
     MessageAttributes,
     MessageBody: JSON.stringify(body),
     QueueUrl: options.queueUrl,
   }
+
   return params
 }
 
-module.exports.sendMessage = async params => {
+export const sendMessage = async params => {
   try {
-    const data = await sqs.sendMessage(params).promise()
+    const data = await sqs.send(new SendMessageCommand(params))
+
     console.log('Success', data.MessageId)
-    return { success: true, response: data }
+
+    return {
+      success: true,
+      response: data,
+    }
   } catch (err) {
     console.log('Error in sqs-util sendMessage', err)
+
     throw err
   }
 }

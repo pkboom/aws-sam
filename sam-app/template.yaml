@@ -25,7 +25,7 @@ Resources:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: lambda-1/
-      Handler: app.lambdaHandler
+      Handler: app.handler
       Runtime: nodejs18.x
       Architectures:
         - x86_64
@@ -45,7 +45,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: lambda-2/
-      Handler: app.lambdaHandler
+      Handler: app.handler
       Runtime: nodejs18.x
       Architectures:
         - x86_64
@@ -58,12 +58,15 @@ Resources:
             BatchSize: 1
 
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-sub.html
+  Lambda1Api:
+    Value: !Sub 'https://${Lambda1Api}.execute-api.${AWS::Region}.amazonaws.com/api/'
+
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-getatt.html
   Lambda1:
     Description: 'Lambda1 Function ARN'
     Value: !GetAtt Lambda1.Arn
+
   Lambda1IamRole:
     Description: 'Implicit IAM Role created for Lambda1 function'
     Value: !GetAtt Lambda1Role.Arn

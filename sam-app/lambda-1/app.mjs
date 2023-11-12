@@ -1,21 +1,14 @@
-const sqsUtil = require('./utils/sqs')
+import { constructDataForSqs, sendMessage } from './utils/sqs.js'
 
 let response
 
-exports.lambdaHandler = async (event, context) => {
+export const handler = async (event, context) => {
   try {
     const payload = event.body
-    /*
-	write ur logic here
-	.
-	.
-	.
-      */
 
     const options = {
-      queueUrl: process.env.SQS_URL, // required
+      queueUrl: process.env.SQS_URL,
       messageAttributes: {
-        // optional
         source: {
           dataType: 'string',
           stringValue: 'lambda-1',
@@ -23,15 +16,14 @@ exports.lambdaHandler = async (event, context) => {
       },
     }
 
-    const params = sqsUtil.constructDataForSqs(payload, options)
-    const sqsResponse = await sqsUtil.sendMessage(params)
+    const params = constructDataForSqs(payload, options)
+    const sqsResponse = await sendMessage(params)
 
     response = {
       statusCode: 200,
       body: JSON.stringify({
         message: 'Sucessfully added data to sqs',
         response: sqsResponse.response,
-        // location: ret.data.trim()
       }),
     }
   } catch (err) {

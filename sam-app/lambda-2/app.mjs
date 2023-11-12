@@ -1,4 +1,4 @@
-exports.lambdaHandler = async (event, context) => {
+export const handler = async (event, context) => {
   try {
     if (!event?.Records?.length) {
       return 'No records'
@@ -6,11 +6,9 @@ exports.lambdaHandler = async (event, context) => {
     for (const record of event.Records) {
       const body = record.body
       const source = record?.messageAttributes?.source
+
       console.log(body)
       console.log(source)
-      /*
-            your logic
-            */
     }
     return 'Successfully processed Records'
   } catch (err) {
