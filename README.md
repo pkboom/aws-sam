@@ -47,12 +47,6 @@ e.g.
 export AWS_PROFILE=inbox_monster_dev
 ```
 
-# SAM
-
-### AWS::Serverless::Function
-
-https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
-
 # Query CloudFormation Stack
 
 ```sh
