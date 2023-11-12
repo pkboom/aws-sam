@@ -47,7 +47,7 @@ e.g.
 export AWS_PROFILE=inbox_monster_dev
 ```
 
-# Query CloudFormation Stack
+# Query CloudFormation stack
 
 ```sh
 aws cloudformation describe-stacks --query 'Stacks[].Outputs'
