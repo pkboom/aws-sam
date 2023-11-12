@@ -51,6 +51,9 @@ export AWS_PROFILE=inbox_monster_dev
 
 ```sh
 aws cloudformation describe-stacks --query 'Stacks[].Outputs'
+
+# query outputkey=SqsLambdaSqs
 aws cloudformation describe-stacks --query 'Stacks[].Outputs[?OutputKey==`SqsLambdaSqs`]'
+
 aws cloudformation describe-stacks --query 'Stacks[].Outputs[?OutputKey==`SqsLambdaSqs`].OutputValue[]'
 ```
