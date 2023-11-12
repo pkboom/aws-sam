@@ -68,18 +68,22 @@ e.g.
 curl http://localhost:3000/hello
 ```
 
-## Deploy the sample application
-
-```bash
-sam build
-sam deploy --guided
-sam deploy --guided --profile inbox_monster_dev
-sam deploy --template-file packaged.yaml --stack-name HelloWorld --capabilities CAPABILITY_IAM
-```
-
 # Deploy
 
-https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started-hello-world.html#serverless-getting-started-hello-world-deploy
+```bash
+sam validate
+sam build
+sam deploy -g --no-confirm-changeset --capabilities CAPABILITY_IAM
+
+sam validate --template template.yaml
+sam deploy --guided
+sam deploy --guided --profile inbox_monster_dev
+sam deploy --template-file packaged.yaml --stack-name HelloWorld
+```
+
+> Hit api endpoint: curl https://<API_ID>.execute-api.<AWS_REGION>.amazonaws.com/Prod/hello
+
+## Prompt
 
 ```
 # Shows you resources changes to be deployed and require a 'Y' to initiate deploy
@@ -101,12 +105,6 @@ sam list endpoints --output json
 
 ## Use the SAM CLI to build and test locally
 
-Build your application with the `sam build` command.
-
-```bash
-sam build
-```
-
 The SAM CLI installs dependencies defined in `hello-world/package.json`, creates a deployment package, and saves it in the `.aws-sam/build` folder.
 
 The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
@@ -126,7 +124,6 @@ Events:
 sam deploy --guided
 sam deploy --guided --profile inbox_monster_dev
 
-curl https://<API_ID>.execute-api.<AWS_REGION>.amazonaws.com/Prod/hello | jq
 ```
 
 ## Add a resource to your application
