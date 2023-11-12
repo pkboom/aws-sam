@@ -95,11 +95,11 @@ HelloWorldFunction has no authentication. Is this okay? [y/N]: y
 
 ## Display output
 
-Displays the outputs of your AWS CloudFormation stack from an AWS Serverless Application Model (AWS SAM) or AWS CloudFormation template
-
 ```sh
 sam list stack-outputs
 
+# api endpoints
+sam list endpoints
 sam list endpoints --output json
 ```
 
