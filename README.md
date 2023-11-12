@@ -14,6 +14,8 @@ sam --version
 
 [Set and view configuration settings using commands](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-methods)
 
+Create credential
+
 ```sh
 aws configure
 ```
@@ -25,6 +27,8 @@ aws configure
 aws_access_key_id = <access_key_id>
 aws_secret_access_key = <secret_access_key>
 ```
+
+List credentials
 
 ```sh
 aws configure list
