@@ -47,12 +47,27 @@ e.g.
 export AWS_PROFILE=inbox_monster_dev
 ```
 
-# Create Lambda Function
+# Using AWS SAM CLI
+
+https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli.html
+
+## Create Lambda Function
 
 https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started-hello-world.html#serverless-getting-started-hello-world-init
 
 ```sh
+sam init --runtime nodejs18.x --name <sam-app-name>
+
+e.g.
 sam init --runtime nodejs18.x --name aws-lambda-nodejs-example
+
+cd <sam-app-name>
+
+mv hello-world <lambda>
+
+cd <lambda>
+
+npm i
 ```
 
 ```
@@ -90,9 +105,7 @@ Would you like to enable monitoring using CloudWatch Application Insights?
 For more info, please view https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch-application-insights.html [y/N]: N
 ```
 
-# Local test
-
-https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli-local.html
+## Local test
 
 > Run docker first.
 
@@ -117,7 +130,7 @@ e.g.
 curl http://localhost:3000/hello
 ```
 
-# Deploy
+## Deploy
 
 ```bash
 sam validate
@@ -132,7 +145,7 @@ sam deploy --template-file packaged.yaml --stack-name HelloWorld
 
 > Hit api endpoint: curl https://<API_ID>.execute-api.<AWS_REGION>.amazonaws.com/Prod/hello
 
-## Prompt
+Prompt
 
 ```
 # Shows you resources changes to be deployed and require a 'Y' to initiate deploy
@@ -153,27 +166,27 @@ sam list endpoints
 sam list endpoints --output json
 ```
 
-# Log
+## Log
 
 https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-logging.html
 
 > This command works for all AWS Lambda functions; not just the ones you deploy using SAM.
 
 ```bash
-sam logs -n HelloWorldFunction
+sam logs -n HelloWorldFunction --tail
 
 sam logs -n HelloWorldFunction --stack-name aws-lambda-nodejs-example --tail
 
 sam logs -n HelloWorldFunction --stack-name aws-lambda-nodejs-example --debug
 ```
 
-# Unit tests
+## Sync
 
-```bash
-npm run test
+```sh
+sam sync --watch
 ```
 
-# Delete
+## Delete
 
 ```bash
 sam delete
@@ -202,16 +215,28 @@ Send a message to sqs
 aws sqs send-message --queue-url "https://sqs.us-east-2.amazonaws.com/524978277775/sam-app-Lambda2Sqs-L4oXiYmo4QKb" --message-body "hello from sqs-lambda trigger" --profile inbox_monster_dev
 ```
 
+# Permissions
+
+Using aws sam, we need permissions for cloudformation, s3, role.
+
+- sam template creates a cloudformation stack.
+- cloudformation stack creates a new role required for lambda function or api gateway.
+- sam template file is uploaded and stored in s3.
+
+# Unit tests
+
+```bash
+npm run test
+```
+
 # Dev
 
 ```sh
-sam init --runtime nodejs18.x --name <sam-app-name>
+sam sync --watch
+```
 
-cd <sam-app-name>
+Trigger lambda via sqs
 
-mv hello-world <lambda>
-
-cd <lambda>
-
-npm i
+```sh
+aws sqs send-message --queue-url "https://sqs.us-east-2.amazonaws.com/524978277775/sqs-lambda-SqsLambdaSqs-e1lYfkRsMhSe" --message-body "hello from sqs-lambda trigger"
 ```
