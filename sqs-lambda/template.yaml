@@ -24,6 +24,9 @@ Resources:
         Variables:
           SQS_URL: !Ref SqsLambdaSqs
       Timeout: 60
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref SqsLambdaS3
       Events:
         SqsLambdaInvoker:
           Type: SQS
