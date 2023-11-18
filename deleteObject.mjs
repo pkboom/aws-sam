@@ -4,17 +4,16 @@ const client = new S3Client({})
 
 const run = async () => {
   let files = [
+    'google.com!spotify.com!1693958400!1694044799.xml',
     'whisnantstrategies.com!s.freepeople.com!1698710400!1698796799.xml',
     'marriott.com!brakspear-uk.co.uk!1698724803!1698811204.xml',
     'test.txt',
-    'GeoLite2-Country.mmdb',
-    'GeoLite2-ASN.mmdb',
   ]
 
   Promise.all(
     files.map(async file => {
       const params = {
-        Bucket: 'lambda-vpc-sqslambdas3-jzq8gda9nsze',
+        Bucket: 'lambda-vpc-sqslambdas3-gvqrbew5jpuu',
         Key: file,
       }
 

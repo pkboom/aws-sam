@@ -17,14 +17,15 @@ class Dmarc {
     this.countryReader = null
     this.asnReader = null
     this.ip = null
-    this.cache = {}
+    this.reverses = []
   }
 
   async getXml() {
     let command = new GetObjectCommand({
       Bucket: process.env.BUCKET_NAME,
       // Key: 'test.txt',
-      Key: 'whisnantstrategies.com!s.freepeople.com!1698710400!1698796799.xml',
+      // Key: 'whisnantstrategies.com!s.freepeople.com!1698710400!1698796799.xml',
+      Key: 'google.com!spotify.com!1693958400!1694044799.xml',
     })
 
     try {
@@ -32,7 +33,7 @@ class Dmarc {
 
       this.xml = await response.Body.transformToString()
 
-      console.log(this.xml)
+      // console.log(this.xml)
     } catch (err) {
       console.error(err)
     }
@@ -47,9 +48,9 @@ class Dmarc {
 
     this.json = new XMLParser().parse(this.xml)
 
-    console.log(this.json)
+    // console.log(this.json)
 
-    return this
+    this.xml = null
   }
 
   async useIpToGeo() {
@@ -62,8 +63,50 @@ class Dmarc {
     this.asnReader = Reader.openBuffer(buffer)
   }
 
-  async toDocument() {
-    console.log('toDocument')
+  async getReverses() {
+    let records = Array.isArray(this.json.feedback.record) ? this.json.feedback.record : [this.json.feedback.record]
+
+    let ips = []
+
+    for (let i = 0; i < records.length; i++) {
+      ips.push(records[i].row.source_ip)
+    }
+
+    console.log(`records.length: ${records.length}`)
+
+    console.log(`ips.length: ${ips.length}`)
+
+    let uniqueIps = ips.filter((value, index, self) => self.indexOf(value) === index)
+
+    console.log(`uniqueIps.length: ${uniqueIps.length}`)
+
+    let reverses = []
+
+    for (let i = 0; i < uniqueIps.length; i++) {
+      reverses.push(this.reverseLookup(uniqueIps[i]))
+    }
+
+    this.reverses = await Promise.all(reverses)
+
+    // console.log(this.reverses)
+  }
+
+  async reverseLookup(ip) {
+    try {
+      let reverse = dns.promises.reverse(ip)
+
+      let timeout = new Promise(resolve => {
+        setTimeout(resolve, 5000, [null])
+      })
+
+      return [ip, await Promise.race([reverse, timeout])]
+    } catch (error) {
+      return [ip, [null]]
+    }
+  }
+
+  toDocument() {
+    // console.log('toDocument')
 
     let startTime = new Date()
     let loop20Time = new Date()
@@ -86,14 +129,14 @@ class Dmarc {
         spf_auth: record.auth_results.spf,
       }
 
-      console.log(data.record.auth_results)
+      // console.log(data.record.auth_results)
 
       data.record.row = {
         ...data.record.row,
-        source_ip_details: await this.sourceIpDetails(),
+        source_ip_details: this.sourceIpDetails(),
       }
 
-      console.log(data.record.row)
+      // console.log(data.record.row)
 
       // Here we send data to kinesis
       // console.log(data);
@@ -106,19 +149,13 @@ class Dmarc {
         let totalTime = endTime - startTime
         let loopTime = endTime - loop20Time
 
-        console.log(`totalTime: ${totalTime}ms, recordTime: ${loopTime}ms`, process.memoryUsage().heapUsed)
+        // console.log(`totalTime: ${totalTime}ms, recordTime: ${loopTime}ms`, process.memoryUsage().heapUsed)
 
         loop20Time = endTime
       }
 
-      this.ip = null
-
-      console.log('================ loop done ===================')
+      // console.log('================ loop done ===================')
     }
-
-    // only distinct ips
-    let temp = Object.keys(this.cache).filter((value, index, self) => self.indexOf(value) === index)
-    console.log(temp.length)
   }
 
   dkimAuth(dkim) {
@@ -134,43 +171,14 @@ class Dmarc {
         }
   }
 
-  async sourceIpDetails() {
-    let ip = Object.keys(this.cache).find(ip => ip === this.ip)
+  sourceIpDetails() {
+    let reverse = this.reverses.find(ip => ip[0] === this.ip)
 
-    if (ip) {
-      console.log('found')
-      console.log(this.cache[ip])
-
-      return this.cache[ip]
-    }
-
-    let addresses
-
-    try {
-      console.log('Reverse ip')
-
-      let reverse = dns.promises.reverse(this.ip)
-
-      let timeout = new Promise(resolve => {
-        setTimeout(resolve, 10000, [null])
-      })
-
-      addresses = await Promise.race([reverse, timeout])
-    } catch (error) {
-      addresses = [null]
-
-      console.log(error.message)
-    }
-
-    console.log({ addresses })
-
-    this.cache[this.ip] = {
+    return {
       country_iso_code: this.getCountry(),
       organization_name: this.getAns(),
-      host: addresses[0],
+      host: reverse[1][0],
     }
-
-    return this.cache[this.ip]
   }
 
   getCountry() {
@@ -182,7 +190,7 @@ class Dmarc {
       //
     }
 
-    console.log(response)
+    // console.log(response)
 
     return response?.country?.isoCode
   }
@@ -196,7 +204,7 @@ class Dmarc {
       //
     }
 
-    console.log(response)
+    // console.log(response)
 
     return response?.autonomousSystemOrganization
   }

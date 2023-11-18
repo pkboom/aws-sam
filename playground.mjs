@@ -45,6 +45,10 @@ const run = async () => {
   console.log(ips.length)
 
   console.log(uniqueIps.length)
+
+  let reverse = await dns.promises.reverse('216.58.194.142')
+
+  console.log(reverse)
 }
 
 run()

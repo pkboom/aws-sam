@@ -1,5 +1,4 @@
 import Dmarc from './Dmarc.js'
-import dns from 'dns'
 
 export const handler = async event => {
   try {
@@ -13,7 +12,9 @@ export const handler = async event => {
 
     await dmarc.useIpToGeo()
 
-    await dmarc.toDocument()
+    await dmarc.getReverses()
+
+    dmarc.toDocument()
 
     return {
       statusCode: 200,
