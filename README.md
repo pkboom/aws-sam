@@ -107,11 +107,16 @@ For more info, please view https://docs.aws.amazon.com/AmazonCloudWatch/latest/m
 
 ## Local test
 
+https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli-local.html
+
 > Run docker first.
 
 Invoke serverless application.
 
 ```sh
+sam local invoke
+
+# if there are multiple functions, provide name
 sam local invoke HelloWorldFunction
 
 sam local invoke HelloWorldFunction | jq
@@ -135,7 +140,7 @@ curl http://localhost:3000/hello
 ```bash
 sam validate
 sam build
-sam deploy -g --no-confirm-changeset --capabilities CAPABILITY_IAM
+sam deploy -g --no-confirm-changeset
 
 sam validate --template template.yaml
 sam deploy --guided
@@ -238,5 +243,11 @@ sam sync --watch
 Trigger lambda via sqs
 
 ```sh
-aws sqs send-message --queue-url "https://sqs.us-east-2.amazonaws.com/524978277775/sqs-lambda-SqsLambdaSqs-e1lYfkRsMhSe" --message-body "hello from sqs-lambda trigger"
+aws sqs send-message --queue-url "" --message-body "hello from sqs-lambda trigger"
+```
+
+Delete message
+
+```sh
+aws sqs delete-message --queue-url "" --receipt-handle ""
 ```

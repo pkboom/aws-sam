@@ -1,13 +1,13 @@
 {
   "name": "hello_world",
   "version": "1.0.0",
-  "description": "hello world sample for NodeJS",
   "main": "app.js",
-  "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",
-  "author": "SAM CLI",
-  "license": "MIT",
+  "type": "module",
   "dependencies": {
-    "axios": ">=0.21.1"
+    "@aws-sdk/client-s3": "^3.451.0",
+    "@maxmind/geoip2-node": "^4.2.0",
+    "axios": ">=0.21.1",
+    "fast-xml-parser": "^4.3.2"
   },
   "scripts": {
     "test": "mocha tests/unit/"

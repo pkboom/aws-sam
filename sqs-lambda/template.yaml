@@ -5,11 +5,16 @@ Description: >
 
   Sample SAM Template for sqs-lambda
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
-# sets the Lambda function timeout value to 3 seconds globally:
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 30
+    # VpcConfig:
+    #   SecurityGroupIds:
+    #     - sg-0efb901ecb8821fee
+    #   SubnetIds:
+    #     - subnet-0092657c49962853e
+    #     - subnet-0aa0ce33a9777441c
+    #     - subnet-0feb059beb1f7b40c
 
 Resources:
   SqsLambdaFunction:
@@ -23,7 +28,6 @@ Resources:
       Environment:
         Variables:
           SQS_URL: !Ref SqsLambdaSqs
-      Timeout: 60
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref SqsLambdaS3
@@ -39,10 +43,90 @@ Resources:
   SqsLambdaSqs:
     Type: AWS::SQS::Queue
     Properties:
-      VisibilityTimeout: 65 # should be greater that lambda timeout
+      VisibilityTimeout: 35 # should be greater that lambda timeout
 
   SqsLambdaS3:
     Type: AWS::S3::Bucket
+
+  S3Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action:
+              - 's3:*'
+            Resource:
+              - '*'
+      RouteTableIds:
+        - rtb-0a05e69d14a62f346
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
+      VpcId: vpc-06457acb76d365db1
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+
+  Public1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: 'us-east-2a'
+      CidrBlock: 10.0.1.0/24
+
+  Private1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: 'us-east-2a'
+      CidrBlock: 10.0.3.0/24
+
+  Private2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: 'us-east-2b'
+      CidrBlock: 10.0.4.0/24
+
+  NATIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NATIP.AllocationId
+      SubnetId: !Ref Public1 # PUBLIC SUBNET!
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+
+  DefaultPrivateRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+
+  Private1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref Private1
+
+  Private2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref Private2
 
 Outputs:
   SqsLambdaFunction:
