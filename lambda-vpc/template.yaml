@@ -24,11 +24,33 @@ Resources:
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref SqsLambdaS3
+      Events:
+        SqsLambdaInvoker:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt SqsLambdaSqs.Arn
+            BatchSize: 1
+      Tags:
+        Env: dev
 
   SqsLambdaS3:
     Type: AWS::S3::Bucket
 
+  SqsLambdaSqs:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 245 # should be greater that lambda timeout
+
 Outputs:
+  HelloWorldFunction:
+    Description: 'HelloWorldFunction Function ARN'
+    Value: !GetAtt HelloWorldFunction.Arn
+  HelloWorldFunctionIamRole:
+    Description: 'Implicit IAM Role created for Hello World function'
+    Value: !GetAtt HelloWorldFunctionRole.Arn
   SqsLambdaS3:
     Description: 'SqsLambdaS3 name'
     Value: !Ref SqsLambdaS3
+  SqsLambdaSqs:
+    Description: 'SqsLambda SQS'
+    Value: !Ref SqsLambdaSqs
