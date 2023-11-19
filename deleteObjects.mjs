@@ -12,7 +12,7 @@ let files = [
 let objects = files.map(file => ({ Key: file }))
 
 let command = new DeleteObjectsCommand({
-  Bucket: 'lambda-vpc-sqslambdas3-gvqrbew5jpuu',
+  Bucket: 'lambda-vpc-sqslambdas3-17wky1ur8l4e9',
   Delete: {
     Objects: objects,
   },

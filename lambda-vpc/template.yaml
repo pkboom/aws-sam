@@ -10,8 +10,8 @@ Resources:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: src/
-      Handler: app.handler
       Runtime: nodejs18.x
+      Handler: app.handler
       MemorySize: 1536
       Timeout: 240
       # 1000 / region
@@ -41,6 +41,35 @@ Resources:
     Properties:
       VisibilityTimeout: 245 # should be greater that lambda timeout
 
+  setup:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Runtime: nodejs18.x
+      Handler: setup.lambdaHandler
+      MemorySize: 512
+      Timeout: 240
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref SqsLambdaS3
+      Policies:
+        - S3FullAccessPolicy:
+            BucketName: !Ref SqsLambdaS3
+
+  beforeDelete:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Runtime: nodejs18.x
+      Handler: beforeDelete.lambdaHandler
+      MemorySize: 512
+      Timeout: 240
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref SqsLambdaS3
+      Policies:
+        - S3FullAccessPolicy:
+            BucketName: !Ref SqsLambdaS3
 Outputs:
   HelloWorldFunction:
     Description: 'HelloWorldFunction Function ARN'
