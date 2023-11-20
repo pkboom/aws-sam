@@ -1,3 +1,5 @@
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-reference.html
+
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
@@ -18,8 +20,10 @@ Resources:
       Handler: app.lambdaHandler
       Runtime: nodejs18.x
       AutoPublishAlias: live
+      # AutoPublishAlias: dev
+      # VersionDescription: '2'
       DeploymentPreference:
-        Type: Canary10Percent5Minutes
+        Type: AllAtOnce
         Alarms:
           - Ref: GreeterFunctionAliasErrorAlarm
       Architectures:

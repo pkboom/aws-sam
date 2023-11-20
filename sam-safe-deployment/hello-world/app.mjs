@@ -1,9 +1,7 @@
 export const lambdaHandler = async (event, context) => {
   console.log(event)
 
-  console.log(1111)
-
-  throw new Error('error')
+  console.log(3333)
 
   try {
     return {
