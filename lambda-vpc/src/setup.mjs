@@ -18,9 +18,7 @@ export const lambdaHandler = async (event, context) => {
 
       const params = {
         Bucket: process.env.BUCKET_NAME,
-        // Key: 'my-key4',
         Key: file,
-        // Body: readFileSync(path.join(dir, file), 'utf8'),
         Body: readFileSync(path.join(process.env.LAMBDA_TASK_ROOT, 'data', file), 'utf8'),
         // Body: 'my-body',
       }

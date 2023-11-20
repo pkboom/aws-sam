@@ -140,7 +140,8 @@ curl http://localhost:3000/hello
 ```bash
 sam validate
 sam build
-sam deploy -g --no-confirm-changeset
+sam deploy -g
+sam deploy -g --no-confirm-changeset --capabilities CAPABILITY_IAM
 
 sam validate --template template.yaml
 sam deploy --guided
