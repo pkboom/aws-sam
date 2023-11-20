@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-safe-deployment
+
+  Sample SAM Template for sam-safe-deployment
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  GreeterFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: hello-world/
+      Handler: app.lambdaHandler
+      Runtime: nodejs18.x
+      AutoPublishAlias: live
+      DeploymentPreference:
+        Type: Canary10Percent5Minutes
+        Alarms:
+          - Ref: GreeterFunctionAliasErrorAlarm
+      Architectures:
+        - x86_64
+      Events:
+        HelloWorld:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /hello
+            Method: get
+
+  GreeterFunctionAliasErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      MetricName: Errors
+      Namespace: 'AWS/Lambda'
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: 1
+      Period: 60
+      Statistic: Sum
+      Threshold: 2
+      AlarmDescription: Fire alarm if more than 3 errors occur in any 60 second period
+      Dimensions:
+        - Name: Resource
+          Value: !Sub '${GreeterFunction}:live'
+        - Name: FunctionName
+          Value: !Ref GreeterFunction
+      TreatMissingData: notBreaching
+
+  LambdaS3:
+    Type: AWS::S3::Bucket
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  GreeterApi:
+    Description: 'API Gateway endpoint URL for Prod stage for Greeter function'
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/'
+  GreeterFunction:
+    Description: 'Greeter Lambda Function ARN'
+    Value: !GetAtt GreeterFunction.Arn
+  GreeterFunctionIamRole:
+    Description: 'Implicit IAM Role created for Greeter function'
+    Value: !GetAtt GreeterFunctionRole.Arn
