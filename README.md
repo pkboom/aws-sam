@@ -252,3 +252,7 @@ Delete message
 ```sh
 aws sqs delete-message --queue-url "" --receipt-handle ""
 ```
+
+# Environments
+
+Rather than trying to use aliases for environments, it is a much better idea to split environments based on other boundaries like CloudFormation stacks, AWS regions, or completely separate AWS accounts.
