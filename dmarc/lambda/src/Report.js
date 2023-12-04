@@ -109,27 +109,23 @@ class Report {
   }
 
   async getAddresses() {
-    // dev
     await this.redisClient.connect()
-    await this.redisClient.del(REVERSE_LOOKUP)
-    await this.redisClient.del(REVERSE_LOOKUP_INDEX)
-    let file = readFileSync('reverses.json', 'utf8')
-    let json = JSON.parse(file)
-    await this.redisClient.hSet(REVERSE_LOOKUP, json)
-    let asdf = await this.redisClient.hGetAll(REVERSE_LOOKUP)
-    console.log({ asdf })
+
+    // dev
+    // await this.redisClient.del(REVERSE_LOOKUP)
+    // await this.redisClient.del(REVERSE_LOOKUP_INDEX)
+    // let file = readFileSync('reverses.json', 'utf8')
+    // let json = JSON.parse(file)
+    // await this.redisClient.hSet(REVERSE_LOOKUP, json)
+    // let asdf = await this.redisClient.hGetAll(REVERSE_LOOKUP)
+    // console.log({ asdf })
     // dev ends
 
     let ips = []
 
-    // for (let i = 0; i < this.records.length; i++) {
-    //   ips.push(this.records[i].row.source_ip)
-    // }
-
-    // dev
-    ips = ['2a01:111:f403:7053::80b', '157.7.106.52', '113.192.242.121', '113.192.242.122', '113.192.242.123', '143.244.89.192']
-    console.log(ips)
-    // dev ends
+    for (let i = 0; i < this.records.length; i++) {
+      ips.push(this.records[i].row.source_ip)
+    }
 
     console.log(`ips.length: ${ips.length}`)
 
