@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  cf-import-demo
+  Sample SAM Template for cf-import-demo
+
+Resources:
+  DemoSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: DemoSNSTopic
+
+  # Copy from existing-stack/template.yaml
+  # TableToImport:
+  #   Type: AWS::DynamoDB::Table
+  #   DeletionPolicy: Retain
+  #   Properties:
+  #     TableName: TableToImport
+  #     AttributeDefinitions:
+  #       - AttributeName: 'demo'
+  #         AttributeType: 'S'
+  #     KeySchema:
+  #       - AttributeName: 'demo'
+  #         KeyType: 'HASH'
+  #     ProvisionedThroughput:
+  #       ReadCapacityUnits: 1
+  #       WriteCapacityUnits: 1

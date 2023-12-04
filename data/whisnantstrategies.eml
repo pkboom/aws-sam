@@ -1,0 +1,55 @@
+Return-Path: <noreply@dmarc.yahoo.com>
+Received: from sonic327-12.consmr.mail.gq1.yahoo.com (sonic327-12.consmr.mail.gq1.yahoo.com [98.137.67.193])
+ by inbound-smtp.us-east-1.amazonaws.com with SMTP id 3p14klm3ckq60mcgmpvttlgm6rbm0petfes2k501
+ for 0MZJtuSukj@dmarc.inboxmonster.com;
+ Wed, 01 Nov 2023 10:35:21 +0000 (UTC)
+X-SES-Spam-Verdict: PASS
+X-SES-Virus-Verdict: PASS
+Received-SPF: none (spfCheck: 98.137.67.193 is neither permitted nor denied by domain of dmarc.yahoo.com) client-ip=98.137.67.193; envelope-from=noreply@dmarc.yahoo.com; helo=sonic327-12.consmr.mail.gq1.yahoo.com;
+Authentication-Results: amazonses.com;
+ spf=none (spfCheck: 98.137.67.193 is neither permitted nor denied by domain of dmarc.yahoo.com) client-ip=98.137.67.193; envelope-from=noreply@dmarc.yahoo.com; helo=sonic327-12.consmr.mail.gq1.yahoo.com;
+ dkim=pass header.i=@yahoo.com;
+ dmarc=pass header.from=dmarc.yahoo.com;
+X-SES-RECEIPT: AEFBQUFBQUFBQUFGQUprdUVGeWlFQUJ6WVNCZnFaWUZFRkI2bktMVzlzYnhNSG96WnpuM0I1VGRxMWxwZlNDVEFwT1hJRzk2cXM5d3haZk55eW9UbDUrMmlzTExFODNJcXNqYzljdEFTNDFPWFRXRDRlNldlK3czQzQxZ3REY3A3d2pDVzYvUGlGU0d2Y1IwSEJ4MGx5TXdPT0NuOVc4N3BjVG1Bdlp6dmVxWC9kdkI2UldFTFJyMzlHZURiQ0JhNzhrU3BSSnlsWDZoaTJkdGxhY29NcWNBdWN5NTBtOG5jRGxWQ0NXVHdiN09jU3c5WnpEZlhVbjFKc0NCQ09CWFVucmhkM2cyMjV3ZXpIZ1E0RE91NTVGZFZoR21uTzk3bTRxQWl6c2JMVGRPaWdsRkJzekdMT3c9PQ==
+X-SES-DKIM-SIGNATURE: a=rsa-sha256; q=dns/txt; b=iCdkq3bjlXrPuA0Riq8lCJtxtCzYGEPOzbpD+uO1suAzhiWIEjQS0Mp3X8Mww1nygFuWbBWMt3nOtv6JVJ+aWYhsA8oVNExnAwZfNvzF1MZx2/qDo7IA36QEHcJVe1D5ee8C8VBCkIDyvJNoxXcTtxzATB5XlOLZ6QJzkaC7wTc=; c=relaxed/simple; s=224i4yxa5dv7c2xz3womw6peuasteono; d=amazonses.com; t=1698834921; v=1; bh=8LCUr2jbyvbQ8lW5KbxTn72PhzGStNy99dvDkAHtZOY=; h=From:To:Cc:Bcc:Subject:Date:Message-ID:MIME-Version:Content-Type:X-SES-RECEIPT;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1698834920; bh=ehbimA8C/n+fIH8KUp3bedy2RO6uq4mT7Jq2KWls+ew=; h=Date:From:To:Subject:From:Subject:Reply-To; b=ERWYFulFRz5PdZoA1dikC3vG0a42sJhtqUZ92W5ZrHr9UPLV/D1GkalzXkLp90Up28QGY6ZGOSse0HYj1A//Un5qyn2k2/Y+Myi2kwlX7ojAsO0zQvnZyqYL7kTjj0dgSywYvHZj5Ee/pfAjj9/YjUGP80fj6PGlsU9eWXtUbSgVcLtJRFWwb67vlSHjfi29Bm8ZYEOLkJu7v+2wFl9TtMtYLJxeKVm5i+lWU5MhdUF5GAsbZY6KmMMt/gDQAqHiWNODEmj1kOzxpv6PWzX/9BcENT+/DyI6KAZMOAAopcsBMpw/Wsl7NsMtzcaL8otONvKYfG3vQlDh9ck9B77Npw==
+X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1698834920; bh=ixOhiulm6HTV0KTc1B9eCR2/+fbZbykZktV6k9kUpXe=; h=X-Sonic-MF:Date:From:To:Subject:From:Subject; b=X2zMhShGlTRj9/hXZ8A3Msa1VSDzTpyFBoK26vJZvYHxt4sLxvuhmFfPHE1h+RPhdNQIm2/eLwc7g9q1aRB+a57VehMVZe7KbBKtD9KPOGnzj7+PURpNfU0atd3k7o0kEKuZd7JbL0hIKHUUTreFifyoFeRc4PTMa84neXBeyp+5TzQ7LsHfCduGJjzRMFqknt5MfTfPCglDkeWhFiR+3C/uOSVbFqYtQp6fLTzANJVqxvBZj+Cqnn4yC1gCr3ySfplfE+ZucbNaZ0XzgzAto71gPfuSwFq/kKRPTSuODykX67G2u+AQKa+Y0l2D6knElaCzgdX/Di82lhXqRicSpA==
+X-Sonic-MF: noreply@dmarc.yahoo.com
+X-Sonic-ID: 70710739-21aa-47d3-854b-fa838dc107f3
+Received: from sonic.gate.mail.ne1.yahoo.com by sonic327.consmr.mail.gq1.yahoo.com with HTTP; Wed, 1 Nov 2023 10:35:20 +0000
+Content-Transfer-Encoding: binary
+Content-Type: multipart/mixed; boundary="_----------=_16988349181104017758"
+MIME-Version: 1.0
+X-Mailer: MIME::Lite 3.030 (F2.84; T1.38; A2.12; B3.13; Q3.13)
+Date: Wed, 1 Nov 2023 03:35:18 -0700
+From: noreply@dmarc.yahoo.com
+To: 0MZJtuSukj@dmarc.inboxmonster.com,md8eNpZUX2@dmarc.inboxmonster.com
+Subject: Report Domain: s.freepeople.com Submitter: whisnantstrategies.com Report-ID: <1698802693.111679>
+Message-Id: <1698834918.855676@dmarc.yahoo.com>
+
+This is a multi-part message in MIME format.
+
+--_----------=_16988349181104017758
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+
+This is an aggregate DMARC report from Yahoo. Your domain s.freepeople.com has a DMARC record set up. You are receiving this report because your email address is included in the 'rua' tag of that domain.  If you no longer wish to receive these reports, or if you would like them to be sent to a different location, kindly update or remove this record or collaborate with your hosting provider.
+
+Please note that this email address is not monitored, and you will not receive a response if you reply to this email. For any feedback or questions, please reach out to dmarchelp@yahooinc.com.
+--_----------=_16988349181104017758
+Content-Disposition: attachment; filename="whisnantstrategies.com!s.freepeople.com!1698710400!1698796799.xml.gz"
+Content-Transfer-Encoding: base64
+Content-Type: application/gzip; name="whisnantstrategies.com!s.freepeople.com!1698710400!1698796799.xml.gz"
+
+H4sIAOYpQmUAA41U0W7jIBB8br8i6gcYk1ZJI3G0v9Eni+B1zBUDAty7/n2XQIybVlWfAjPj2d1h
+Ffb0f9KbN/BBWfPnjjbt3RO/uWUDQH8U8hXPmw3z4KyP3QRR9CKKM4iw9afOiAn4ixitZWS5Fx4m
+oTTvJ+HlCNo9vyeZMrKRdmIks0VaKqie093h8bHd7g73DaV0tz8wUsmixiag88KcLqUQO8JJmfPX
+e9o+tC0jGVkEYLL5/oCm6JruxY9cGS4lP03MnNVKvnduPmoVRqjtWBzF8NAMHsCBdRryiIUoMtG/
+qol7RvLhggY3nMH0WzDHPfwFGRlxCyQjp2mqdMg9ftsOJimtX1rz9l9NINjZS+iU4/QcbrNtHxp6
+v2WkMotY2tlEjlw+LHipCm9Cz5havzApCBWcDSriLnFjDWACK2QtTAE4EQIqaha5SYwhMzWQ1bTX
+dfGplhGZ6sFENShc5/rlCKIH3w3eTt880Zq9OH61YWKOY+chzDqurK97/90i5DFB4wNbzylNLhTH
+vSArVa5Y8iiXGsmn8mwdV+3liK8noflNSz8XW60n+ZJG0pe1Y6T+d3wASueX+F4EAAA=
+
+--_----------=_16988349181104017758--
+

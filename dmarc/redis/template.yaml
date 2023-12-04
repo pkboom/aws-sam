@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: redis
+
+Parameters:
+  PrivateSubnetId:
+    Type: String
+  SecurityGroupId:
+    Type: String
+
+Resources:
+  ElastiCacheSubnetGroup:
+    Type: 'AWS::ElastiCache::SubnetGroup'
+    Properties:
+      Description: Cache Subnet Group
+      SubnetIds:
+        - !Ref PrivateSubnetId
+
+  ElastiCacheRedisCluster:
+    Type: AWS::ElastiCache::ReplicationGroup
+    DependsOn: ElastiCacheSubnetGroup
+    Properties:
+      ReplicationGroupDescription: !Ref 'AWS::StackName'
+      AutoMinorVersionUpgrade: true
+      Engine: redis
+      EngineVersion: '7.0'
+      CacheNodeType: cache.t2.micro
+      CacheSubnetGroupName: !Ref ElastiCacheSubnetGroup
+      NumNodeGroups: 1
+      Port: 6379
+      ReplicasPerNodeGroup: 1
+      SecurityGroupIds:
+        - !Ref SecurityGroupId
+
+Outputs:
+  ElastiCacheRedisClusterEndpoint:
+    Value: !GetAtt ElastiCacheRedisCluster.PrimaryEndPoint.Address

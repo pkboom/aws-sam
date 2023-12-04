@@ -56,18 +56,7 @@ https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/u
 https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started-hello-world.html#serverless-getting-started-hello-world-init
 
 ```sh
-sam init --runtime nodejs18.x --name <sam-app-name>
-
-e.g.
-sam init --runtime nodejs18.x --name aws-lambda-nodejs-example
-
-cd <sam-app-name>
-
-mv hello-world <lambda>
-
-cd <lambda>
-
-npm i
+sam init --runtime nodejs18.x --name <app_name>
 ```
 
 ```
@@ -115,13 +104,6 @@ Invoke serverless application.
 
 ```sh
 sam local invoke
-
-# if there are multiple functions, provide name
-sam local invoke HelloWorldFunction
-
-sam local invoke HelloWorldFunction | jq
-
-sam local invoke HelloWorldFunction --event events/event.json
 ```
 
 Emulate your application's API locally on port 3000.
@@ -141,7 +123,7 @@ curl http://localhost:3000/hello
 sam validate
 sam build
 sam deploy -g
-sam deploy -g --no-confirm-changeset --capabilities CAPABILITY_IAM
+sam deploy --no-confirm-changeset --capabilities CAPABILITY_IAM
 
 sam validate --template template.yaml
 sam deploy --guided
@@ -256,3 +238,55 @@ aws sqs delete-message --queue-url "" --receipt-handle ""
 # Environments
 
 Rather than trying to use aliases for environments, it is a much better idea to split environments based on other boundaries like CloudFormation stacks, AWS regions, or completely separate AWS accounts.
+
+# DMARC
+
+https://en.wikipedia.org/wiki/DMARC
+
+https://wander.science/articles/understanding-dmarc-reports
+
+# Metrics
+
+https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/viewing_metrics_with_cloudwatch.html
+
+```sh
+aws cloudwatch list-metrics --namespace AWS/Lambda
+
+aws cloudwatch list-metrics --namespace AWS/EC2
+```
+
+# Docker
+
+```sh
+docker run -d --name sam-redis -p 127.0.0.1:6379:6379 redis
+
+docker start sam-redis
+
+docker ps -a
+
+docker exec -it sam-redis sh
+
+docker stop sam-redis
+
+docker rm sam-redis
+```
+
+```sh
+docker-compose up -d
+
+docker-compose down
+
+docker-compose ps
+
+docker network ls
+
+# Use with discretion
+docker system prune -a
+```
+
+```docker
+# redis-cli
+
+127.0.0.1:6379> ping
+PONG
+```

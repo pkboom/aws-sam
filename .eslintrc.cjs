@@ -19,5 +19,7 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
-  rules: {},
+  rules: {
+    'no-constant-condition': ['error', { checkLoops: false }],
+  },
 }

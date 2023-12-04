@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: dmarc processing
+
+Resources:
+  VPC:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: vpc/template.yaml
+
+  Redis:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: redis/template.yaml
+      Parameters:
+        PrivateSubnetId: !GetAtt VPC.Outputs.PrivateSubnetId
+        SecurityGroupId: !GetAtt VPC.Outputs.SecurityGroupId
+
+  Lambda:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: lambda/template.yaml
+      Parameters:
+        PrivateSubnetId: !GetAtt VPC.Outputs.PrivateSubnetId
+        SecurityGroupId: !GetAtt VPC.Outputs.SecurityGroupId
+        ElastiCacheRedisClusterEndpoint: !GetAtt Redis.Outputs.ElastiCacheRedisClusterEndpoint
+
+Outputs:
+  PrivateSubnetId:
+    Value: !GetAtt VPC.Outputs.PrivateSubnetId
+  SecurityGroupId:
+    Value: !GetAtt VPC.Outputs.SecurityGroupId
+  ElastiCacheRedisClusterEndpoint:
+    Value: !GetAtt Redis.Outputs.ElastiCacheRedisClusterEndpoint
+  MailBucketName:
+    Value: !GetAtt Lambda.Outputs.MailBucketName
+  EmailQueueUrl:
+    Value: !GetAtt Lambda.Outputs.EmailQueueUrl
