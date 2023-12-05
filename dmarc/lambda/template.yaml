@@ -34,12 +34,12 @@ Resources:
       Environment:
         Variables:
           REDIS_HOST_ENDPOINT: !Ref ElastiCacheRedisClusterEndpoint
-          MAILBUCKET_NAME: !Ref MailBucket
+          MAILBUCKET_NAME: !Ref DmarcBucket
           KINESIS_ARN: !Ref KinesisStreamArn
       Policies:
         # - S3ReadPolicy:
         - S3FullAccessPolicy:
-            BucketName: !Ref MailBucket
+            BucketName: !Ref DmarcBucket
         # - S3FullAccessPolicy:
         #     BucketName: !Ref RecordBucket
         - KinesisCrudPolicy:
@@ -71,7 +71,7 @@ Resources:
     Metadata:
       BuildMethod: nodejs18.x
 
-  MailBucket:
+  DmarcBucket:
     Type: AWS::S3::Bucket
     DependsOn:
       - DmarcQueuePolicy
@@ -144,8 +144,8 @@ Outputs:
   DmarcFunctionIamRole:
     Description: 'Implicit IAM Role created for DmarcFunction function'
     Value: !GetAtt DmarcFunctionRole.Arn
-  MailBucketName:
-    Value: !Ref MailBucket
+  DmarcBucketName:
+    Value: !Ref DmarcBucket
   DmarcQueueUrl:
     Value: !Ref DmarcQueue
   DmarcQueueArn:
