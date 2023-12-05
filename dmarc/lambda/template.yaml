@@ -21,7 +21,7 @@ Resources:
       CodeUri: src/
       Handler: app.handler
       Runtime: nodejs18.x
-      MemorySize: 1536
+      MemorySize: 4096
       Timeout: 600
       Layers:
         - !Ref AppLayer
@@ -58,7 +58,7 @@ Resources:
             Queue: !GetAtt DmarcQueue.Arn
             BatchSize: 1
             ScalingConfig:
-              MaximumConcurrency: 70
+              MaximumConcurrency: 50
 
   # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-layers.html
   AppLayer:

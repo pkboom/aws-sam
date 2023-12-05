@@ -1,8 +1,0 @@
-{
-  "name": "app-layer",
-  "version": "1.0.0",
-  "type": "module",
-  "dependencies": {
-    "bottleneck": "^2.19.5"
-  }
-}
