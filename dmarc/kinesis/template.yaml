@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: kinesis
+
+Resources:
+  KinesisStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      # StreamModeDetails:
+      #   StreamMode: ON_DEMAND
+      #   # StreamMode: PROVISIONED # If shardCount is set, this is default.
+      ShardCount: 199
+      StreamEncryption:
+        EncryptionType: KMS
+        KeyId: alias/aws/kinesis

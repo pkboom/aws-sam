@@ -6,9 +6,9 @@ import { simpleParser } from 'mailparser'
 import unzipper from 'unzipper'
 import { KinesisClient, PutRecordsCommand } from '@aws-sdk/client-kinesis'
 import { errorMessages, REVERSE_LOOKUP, REVERSE_LOOKUP_INDEX } from '/opt/nodejs/helper.js'
-import Tangerine from 'tangerine'
 import Bottleneck from 'bottleneck'
-import { readFileSync } from 'fs'
+import { wait } from '/opt/nodejs/helper.js'
+import dns from 'dns'
 
 class Report {
   constructor() {
@@ -19,9 +19,12 @@ class Report {
     this.reverses = {}
     this.s3Client = new S3Client({})
     this.kinesisClient = new KinesisClient()
-    this.resolver = new Tangerine()
     this.limiter = new Bottleneck({
       maxConcurrent: 500,
+      datastore: 'redis',
+      clientOptions: {
+        url: `redis://${process.env.REDIS_HOST_ENDPOINT}`,
+      },
     })
     this.redisClient = redis.createClient({
       url: `redis://${process.env.REDIS_HOST_ENDPOINT}`,
@@ -29,25 +32,27 @@ class Report {
   }
 
   async getMessage(event) {
-    // let key = JSON.parse(event.Records[0].body).eml
-    let key = 'u86npvbdq335llj1d62p1b5b1jmlmplsgip207g1'
+    let key = JSON.parse(event.Records[0].body).Records[0].s3.object.key
+    //  key = 'u86npvbdq335llj1d62p1b5b1jmlmplsgip207g1'
 
     console.log(`key: ${key}`)
 
+    let command = new GetObjectCommand({
+      Bucket: process.env.MAILBUCKET_NAME,
+      Key: key,
+    })
+
+    let response
+
     try {
-      let command = new GetObjectCommand({
-        Bucket: process.env.MAILBUCKET_NAME,
-        Key: key,
-      })
-
-      let response = await this.s3Client.send(command)
-
-      let arrayBuffer = await response.Body.toArray()
-
-      this.message = Buffer.concat(arrayBuffer)
-    } catch (err) {
-      console.error(err)
+      response = await this.s3Client.send(command)
+    } catch (error) {
+      throw new Error(errorMessages.badKey)
     }
+
+    let arrayBuffer = await response.Body.toArray()
+
+    this.message = Buffer.concat(arrayBuffer)
   }
 
   async toJson() {
@@ -55,7 +60,7 @@ class Report {
 
     let content
 
-    console.log(parsed)
+    // console.log(parsed)
 
     if (parsed.attachments.length === 0) {
       throw new Error(errorMessages.noAttachment)
@@ -104,16 +109,20 @@ class Report {
 
     this.message = null
 
-    console.log(this.json)
+    // console.log(this.json)
     console.log(`records.length: ${this.records.length}`)
+  }
+
+  async emptyRedis() {
+    await this.redisClient.del(REVERSE_LOOKUP)
+    await this.redisClient.del(REVERSE_LOOKUP_INDEX)
   }
 
   async getAddresses() {
     await this.redisClient.connect()
 
     // dev
-    // await this.redisClient.del(REVERSE_LOOKUP)
-    // await this.redisClient.del(REVERSE_LOOKUP_INDEX)
+    await this.emptyRedis()
     // let file = readFileSync('reverses.json', 'utf8')
     // let json = JSON.parse(file)
     // await this.redisClient.hSet(REVERSE_LOOKUP, json)
@@ -127,11 +136,11 @@ class Report {
       ips.push(this.records[i].row.source_ip)
     }
 
-    console.log(`ips.length: ${ips.length}`)
+    // console.log(`ips.length: ${ips.length}`)
 
     let uniqueIps = ips.filter((value, index, self) => self.indexOf(value) === index)
 
-    console.log(`uniqueIps.length: ${uniqueIps.length}`)
+    // console.log(`uniqueIps.length: ${uniqueIps.length}`)
 
     let newIps = []
 
@@ -147,8 +156,8 @@ class Report {
       return acc
     }, {})
 
-    console.log({ existingIps })
-    console.log({ newIps })
+    // console.log({ existingIps })
+    // console.log({ newIps })
 
     let reverses = []
 
@@ -156,16 +165,20 @@ class Report {
 
     for (let i = 0; i < newIps.length; i++) {
       reverses.push(this.reverseLookup(newIps[i]))
+    }
 
+    let addresses = await Promise.allSettled(reverses)
+
+    // Don't put this in reverseLookup loop above.
+    // Somehow an error is thrown.
+    for (let i = 0; i < newIps.length; i++) {
       await this.redisClient.zAdd(REVERSE_LOOKUP_INDEX, {
         score: date,
         value: newIps[i],
       })
     }
 
-    let addresses = await Promise.allSettled(reverses)
-
-    console.log(addresses)
+    // console.log(addresses)
     console.log(addresses.length)
 
     this.reverses = newIps.reduce((acc, ip, index) => {
@@ -178,21 +191,20 @@ class Report {
       return acc
     }, {})
 
-    console.log(this.reverses)
+    // console.log(this.reverses)
+    console.log(`this.reverses.length: ${Object.keys(this.reverses).length}`)
 
-    await this.redisClient.hSet(REVERSE_LOOKUP, this.reverses)
+    if (Object.keys(this.reverses).length !== 0) {
+      await this.redisClient.hSet(REVERSE_LOOKUP, this.reverses)
+    }
 
     await this.removeOldIps(date)
 
-    throw new Error('test')
-
     Object.assign(this.reverses, existingIps)
 
+    console.log(`this.reverses.length: ${Object.keys(this.reverses).length}`)
+
     await this.redisClient.quit()
-
-    console.log(this.reverses)
-
-    throw new Error('test')
 
     // For dev
     // await this.s3Client.send(
@@ -205,7 +217,12 @@ class Report {
   }
 
   reverseLookup(ip) {
-    return this.limiter.schedule(() => this.resolver.reverse(ip))
+    return this.limiter.schedule(
+      {
+        expiration: 5000,
+      },
+      () => dns.promises.reverse(ip),
+    )
   }
 
   async removeOldIps(date) {

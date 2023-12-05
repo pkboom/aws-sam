@@ -18,8 +18,7 @@ Resources:
       Handler: app.handler
       Runtime: nodejs18.x
       MemorySize: 1536
-      # Timeout: 300
-      Timeout: 30
+      Timeout: 600
       Layers:
         - !Ref AppLayer
       # DeploymentPreference:
@@ -70,6 +69,29 @@ Resources:
 
   MailBucket:
     Type: AWS::S3::Bucket
+    DependsOn:
+      - EmailQueuePolicy
+    Properties:
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: 's3:ObjectCreated:Put'
+            Queue: !GetAtt EmailQueue.Arn
+
+  EmailQueuePolicy:
+    Type: 'AWS::SQS::QueuePolicy'
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Id: QueuePolicy
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 's3.amazonaws.com'
+            Action:
+              - 'sqs:SendMessage'
+            Resource: !GetAtt EmailQueue.Arn
+      Queues:
+        - !Ref EmailQueue
 
   KinesisStream:
     Type: AWS::Kinesis::Stream
@@ -85,7 +107,7 @@ Resources:
   #     DeliveryStreamName: !Ref AWS::StackName
   #     DeliveryStreamType: KinesisStreamAsSource
   #     AmazonopensearchserviceDestinationConfiguration:
-
+  #       - IndexName
   #     KinesisStreamSourceConfiguration:
   #       KinesisStreamARN: !GetAtt KinesisStream.Arn
   #       RoleARN: !GetAtt FirehoseDeliveryIAMRole.Arn
@@ -104,7 +126,7 @@ Resources:
   FirehoseDeliveryIAMPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: !Join ['-', ['kinesis', 'fh', dmarc']]
+      PolicyName: !Sub 'FirehoseDeliveryIAMPolicy-${FirehoseDeliveryIAMRole}'
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -116,8 +138,7 @@ Resources:
             Resource: !GetAtt KinesisStream.Arn
       Roles:
         - !Ref FirehoseDeliveryIAMRole
-    DependsOn:
-      - KinesisStream
+    DependsOn: KinesisStream
 
   EmailQueue:
     Type: AWS::SQS::Queue

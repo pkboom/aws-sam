@@ -13,6 +13,7 @@ export const errorMessages = {
   badAttachment: 'Bad attachment',
   noAttachment: 'No attachment',
   badContentType: 'Bad content type',
+  badKey: 'Bad key',
   test: 'test',
 }
 

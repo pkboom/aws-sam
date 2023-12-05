@@ -16,9 +16,7 @@
     "inquirer-autocomplete-standalone": "^0.8.1",
     "mailparser": "^3.6.5",
     "redis": "^4.6.11",
-    "tangerine": "^1.5.4",
     "toml": "^3.0.0",
-    "undici": "^5.28.2",
     "unzipper": "^0.10.14",
     "yargs": "^17.7.2"
   }

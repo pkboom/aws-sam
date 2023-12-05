@@ -12,7 +12,7 @@ let limiter = new Bottleneck({
   maxConcurrent: 500,
 })
 
-let ips = readFileSync('ips2.json', 'utf8')
+let ips = readFileSync('ips.json', 'utf8')
 
 let json = JSON.parse(ips)
 
@@ -34,7 +34,7 @@ const run = async () => {
 
 run()
 
-async function reverseLookup(ip) {
+function reverseLookup(ip) {
   // console.log(ip)
   return limiter.schedule(
     {

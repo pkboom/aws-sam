@@ -7,13 +7,13 @@ export const handler = async (event, context) => {
 
     let report = new Report()
 
-    // await report.getMessage(event)
+    await report.getMessage(event)
 
-    // await report.toJson()
+    await report.toJson()
 
     await report.getAddresses()
 
-    // await report.sendToKinesis()
+    await report.sendToKinesis()
 
     return {
       statusCode: 200,
