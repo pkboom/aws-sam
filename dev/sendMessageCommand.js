@@ -6,7 +6,15 @@ const client = new SQSClient({})
 const run = async () => {
   let input = {
     MessageBody: JSON.stringify({
-      eml: 'google.eml',
+      Records: [
+        {
+          s3: {
+            object: {
+              key: 'google.eml',
+            },
+          },
+        },
+      ],
     }),
     QueueUrl: argv.outputValue,
   }

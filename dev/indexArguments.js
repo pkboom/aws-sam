@@ -53,7 +53,7 @@ answers['command'] = await autocomplete({
 
 let stackOutputs = JSON.parse(execSync(`sam list stack-outputs --stack-name ${answers.stackName} --output json`).toString())
 
-if (['sendMessageBatch'].includes(answers.command)) {
+if (['sendMessageBatch', 'sendMessage'].includes(answers.command)) {
   console.log('It needs a url')
 }
 

@@ -1,6 +1,25 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: lambda
+Description: dmarc
+
+Parameters:
+  Env:
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+    Default: dev
+
+Mappings:
+  EnvMapping:
+    dev:
+      DmarcBucketName: inboxmonster-dev-dmarc-isolated-us-east-2-datalake
+      DmarcQueueName: inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email
+      DmarcQueueArn: arn:aws:sqs:us-east-2:524978277775:inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email
+    prod:
+      DmarcBucketName: inboxmonster-dev-dmarc-isolated-us-east-2-datalake
+      DmarcQueueName: inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email
+      DmarcQueueArn: arn:aws:sqs:us-east-2:524978277775:inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email
 
 Resources:
   DmarcFunction:
@@ -10,7 +29,7 @@ Resources:
       Handler: app.handler
       Runtime: nodejs18.x
       MemorySize: 4096
-      Timeout: 600
+      Timeout: 300
       Layers:
         - !Ref AppLayer
       # DeploymentPreference:
@@ -22,12 +41,12 @@ Resources:
       Environment:
         Variables:
           # REDIS_HOST_ENDPOINT: !Ref ElastiCacheRedisClusterEndpoint
-          BUCKET_NAME: !ImportValue DmarcBucket
+          BUCKET_NAME: !FindInMap [EnvMapping, !Ref Env, DmarcBucketName]
           # KINESIS_ARN: !Ref KinesisStreamArn
       Policies:
         # - S3ReadPolicy:
         - S3FullAccessPolicy:
-            BucketName: !ImportValue DmarcBucket
+            BucketName: !FindInMap [EnvMapping, !Ref Env, DmarcBucketName]
         # - S3FullAccessPolicy:
         #     BucketName: !Ref RecordBucket
         # - KinesisCrudPolicy:
@@ -43,7 +62,7 @@ Resources:
         Invoker:
           Type: SQS
           Properties:
-            Queue: !GetAtt DmarcQueue.Arn
+            Queue: !FindInMap [EnvMapping, !Ref Env, DmarcQueueArn]
             BatchSize: 1
             ScalingConfig:
               MaximumConcurrency: 50
@@ -59,43 +78,33 @@ Resources:
     Metadata:
       BuildMethod: nodejs18.x
 
-  DmarcBucket:
-    Type: AWS::S3::Bucket
-    DependsOn:
-      - DmarcQueuePolicy
-    Properties:
-      NotificationConfiguration:
-        QueueConfigurations:
-          - Event: 's3:ObjectCreated:Put'
-            Queue: !GetAtt DmarcQueue.Arn
+  # DmarcQueuePolicy:
+  #   Type: 'AWS::SQS::QueuePolicy'
+  #   Properties:
+  #     PolicyDocument:
+  #       Version: '2012-10-17'
+  #       Id: QueuePolicy
+  #       Statement:
+  #         - Effect: Allow
+  #           Principal:
+  #             Service: 's3.amazonaws.com'
+  #           Action:
+  #             - 'sqs:SendMessage'
+  #           Resource: !FindInMap [EnvMapping, !Ref Env, DmarcQueueArn]
+  #     Queues:
+  #       - !FindInMap [EnvMapping, !Ref Env, DmarcQueueName]
 
-  DmarcQueuePolicy:
-    Type: 'AWS::SQS::QueuePolicy'
-    Properties:
-      PolicyDocument:
-        Version: '2012-10-17'
-        Id: QueuePolicy
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: 's3.amazonaws.com'
-            Action:
-              - 'sqs:SendMessage'
-            Resource: !GetAtt DmarcQueue.Arn
-      Queues:
-        - !Ref DmarcQueue
+  # DmarcQueue:
+  #   Type: AWS::SQS::Queue
+  #   Properties:
+  #     VisibilityTimeout: 305 # should be greater that lambda timeout
+  #     RedrivePolicy:
+  #       deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+  #       maxReceiveCount: 3
 
-  DmarcQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      VisibilityTimeout: 305 # should be greater that lambda timeout
-      RedrivePolicy:
-        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
-        maxReceiveCount: 3
-
-  # https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html
-  DeadLetterQueue:
-    Type: AWS::SQS::Queue
+  # # https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html
+  # DeadLetterQueue:
+  #   Type: AWS::SQS::Queue
 
 Outputs:
   DmarcFunction:
@@ -104,8 +113,8 @@ Outputs:
     Description: 'Implicit IAM Role created for DmarcFunction function'
     Value: !GetAtt DmarcFunctionRole.Arn
   DmarcBucketName:
-    Value: !Ref DmarcBucket
-  DmarcQueueUrl:
-    Value: !Ref DmarcQueue
+    Value: !FindInMap [EnvMapping, !Ref Env, DmarcBucketName]
+  DmarcQueueName:
+    Value: !FindInMap [EnvMapping, !Ref Env, DmarcQueueName]
   DmarcQueueArn:
-    Value: !GetAtt DmarcQueue.Arn
+    Value: !FindInMap [EnvMapping, !Ref Env, DmarcQueueArn]

@@ -32,6 +32,8 @@ class Report {
   }
 
   async getMessage(event) {
+    console.log(JSON.parse(event.Records[0].body).Records[0])
+
     let key = JSON.parse(event.Records[0].body).Records[0].s3.object.key
     //  key = 'u86npvbdq335llj1d62p1b5b1jmlmplsgip207g1'
 

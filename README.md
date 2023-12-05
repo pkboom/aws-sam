@@ -128,7 +128,7 @@ sam deploy --no-confirm-changeset --capabilities CAPABILITY_IAM
 sam validate --template template.yaml
 sam deploy --guided
 sam deploy --guided --profile inbox_monster_dev
-sam deploy --template-file packaged.yaml --stack-name HelloWorld
+sam deploy --template-file template.yaml --stack-name HelloWorld
 ```
 
 > Hit api endpoint: curl https://<API_ID>.execute-api.<AWS_REGION>.amazonaws.com/Prod/hello
