@@ -9,6 +9,10 @@ Parameters:
     Type: String
   ElastiCacheRedisClusterEndpoint:
     Type: String
+  KinesisStreamName:
+    Type: String
+  KinesisStreamArn:
+    Type: String
 
 Resources:
   DmarcFunction:
@@ -31,7 +35,7 @@ Resources:
         Variables:
           REDIS_HOST_ENDPOINT: !Ref ElastiCacheRedisClusterEndpoint
           MAILBUCKET_NAME: !Ref MailBucket
-          KINESIS_ARN: !GetAtt KinesisStream.Arn
+          KINESIS_ARN: !Ref KinesisStreamArn
       Policies:
         # - S3ReadPolicy:
         - S3FullAccessPolicy:
@@ -40,7 +44,7 @@ Resources:
         #     BucketName: !Ref RecordBucket
         - KinesisCrudPolicy:
             # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-template-list.html#kinesis-crud-policy
-            StreamName: !Ref KinesisStream
+            StreamName: !Ref KinesisStreamName
       VpcConfig:
         SecurityGroupIds:
           - !Ref SecurityGroupId
@@ -51,7 +55,7 @@ Resources:
         Invoker:
           Type: SQS
           Properties:
-            Queue: !GetAtt EmailQueue.Arn
+            Queue: !GetAtt DmarcQueue.Arn
             BatchSize: 1
             ScalingConfig:
               MaximumConcurrency: 70
@@ -70,14 +74,14 @@ Resources:
   MailBucket:
     Type: AWS::S3::Bucket
     DependsOn:
-      - EmailQueuePolicy
+      - DmarcQueuePolicy
     Properties:
       NotificationConfiguration:
         QueueConfigurations:
           - Event: 's3:ObjectCreated:Put'
-            Queue: !GetAtt EmailQueue.Arn
+            Queue: !GetAtt DmarcQueue.Arn
 
-  EmailQueuePolicy:
+  DmarcQueuePolicy:
     Type: 'AWS::SQS::QueuePolicy'
     Properties:
       PolicyDocument:
@@ -89,58 +93,11 @@ Resources:
               Service: 's3.amazonaws.com'
             Action:
               - 'sqs:SendMessage'
-            Resource: !GetAtt EmailQueue.Arn
+            Resource: !GetAtt DmarcQueue.Arn
       Queues:
-        - !Ref EmailQueue
+        - !Ref DmarcQueue
 
-  KinesisStream:
-    Type: AWS::Kinesis::Stream
-    Properties:
-      ShardCount: 199
-      StreamEncryption:
-        EncryptionType: KMS
-        KeyId: alias/aws/kinesis
-
-  # Deliverystream:
-  #   Type: AWS::KinesisFirehose::DeliveryStream
-  #   Properties:
-  #     DeliveryStreamName: !Ref AWS::StackName
-  #     DeliveryStreamType: KinesisStreamAsSource
-  #     AmazonopensearchserviceDestinationConfiguration:
-  #       - IndexName
-  #     KinesisStreamSourceConfiguration:
-  #       KinesisStreamARN: !GetAtt KinesisStream.Arn
-  #       RoleARN: !GetAtt FirehoseDeliveryIAMRole.Arn
-
-  FirehoseDeliveryIAMRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: firehose.amazonaws.com
-            Action: sts:AssumeRole
-
-  FirehoseDeliveryIAMPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: !Sub 'FirehoseDeliveryIAMPolicy-${FirehoseDeliveryIAMRole}'
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Action:
-              - kinesis:DescribeStream
-              - kinesis:GetShardIterator
-              - kinesis:GetRecords
-            Resource: !GetAtt KinesisStream.Arn
-      Roles:
-        - !Ref FirehoseDeliveryIAMRole
-    DependsOn: KinesisStream
-
-  EmailQueue:
+  DmarcQueue:
     Type: AWS::SQS::Queue
     Properties:
       VisibilityTimeout: 305 # should be greater that lambda timeout
@@ -189,9 +146,7 @@ Outputs:
     Value: !GetAtt DmarcFunctionRole.Arn
   MailBucketName:
     Value: !Ref MailBucket
-  KinesisStream:
-    Value: !Ref KinesisStream
-  EmailQueueUrl:
-    Value: !Ref EmailQueue
-  EmailQueueArn:
-    Value: !GetAtt EmailQueue.Arn
+  DmarcQueueUrl:
+    Value: !Ref DmarcQueue
+  DmarcQueueArn:
+    Value: !GetAtt DmarcQueue.Arn

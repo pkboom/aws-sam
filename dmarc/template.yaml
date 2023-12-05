@@ -16,6 +16,11 @@ Resources:
         PrivateSubnetId: !GetAtt VPC.Outputs.PrivateSubnetId
         SecurityGroupId: !GetAtt VPC.Outputs.SecurityGroupId
 
+  Kinesis:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: kinesis/template.yaml
+
   Lambda:
     Type: AWS::Serverless::Application
     Properties:
@@ -24,6 +29,8 @@ Resources:
         PrivateSubnetId: !GetAtt VPC.Outputs.PrivateSubnetId
         SecurityGroupId: !GetAtt VPC.Outputs.SecurityGroupId
         ElastiCacheRedisClusterEndpoint: !GetAtt Redis.Outputs.ElastiCacheRedisClusterEndpoint
+        KinesisStreamName: !GetAtt Kinesis.Outputs.KinesisStreamName
+        KinesisStreamArn: !GetAtt Kinesis.Outputs.KinesisStreamArn
 
 Outputs:
   PrivateSubnetId:
