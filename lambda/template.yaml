@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: lambda
+
+Resources:
+  DmarcFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: app.handler
+      Runtime: nodejs18.x
+      MemorySize: 4096
+      Timeout: 600
+      Layers:
+        - !Ref AppLayer
+      # DeploymentPreference:
+      #   Type: AllAtOnce
+      #   Alarms:
+      #     - Ref: RecordsFunctionErrorAlarm
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          # REDIS_HOST_ENDPOINT: !Ref ElastiCacheRedisClusterEndpoint
+          BUCKET_NAME: !ImportValue DmarcBucket
+          # KINESIS_ARN: !Ref KinesisStreamArn
+      Policies:
+        # - S3ReadPolicy:
+        - S3FullAccessPolicy:
+            BucketName: !ImportValue DmarcBucket
+        # - S3FullAccessPolicy:
+        #     BucketName: !Ref RecordBucket
+        # - KinesisCrudPolicy:
+        #     # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-template-list.html#kinesis-crud-policy
+        #     StreamName: !Ref KinesisStreamName
+      # VpcConfig:
+      #   SecurityGroupIds:
+      #     - !Ref SecurityGroupId
+      #   SubnetIds:
+      #     - !Ref PrivateSubnetId
+      Events:
+        # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-eventsource.html
+        Invoker:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt DmarcQueue.Arn
+            BatchSize: 1
+            ScalingConfig:
+              MaximumConcurrency: 50
+
+  # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-layers.html
+  AppLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      Description: app specific deps
+      ContentUri: layer
+      CompatibleRuntimes:
+        - nodejs18.x
+    Metadata:
+      BuildMethod: nodejs18.x
+
+  DmarcBucket:
+    Type: AWS::S3::Bucket
+    DependsOn:
+      - DmarcQueuePolicy
+    Properties:
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: 's3:ObjectCreated:Put'
+            Queue: !GetAtt DmarcQueue.Arn
+
+  DmarcQueuePolicy:
+    Type: 'AWS::SQS::QueuePolicy'
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Id: QueuePolicy
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 's3.amazonaws.com'
+            Action:
+              - 'sqs:SendMessage'
+            Resource: !GetAtt DmarcQueue.Arn
+      Queues:
+        - !Ref DmarcQueue
+
+  DmarcQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 305 # should be greater that lambda timeout
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 3
+
+  # https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+
+Outputs:
+  DmarcFunction:
+    Value: !GetAtt DmarcFunction.Arn
+  DmarcFunctionIamRole:
+    Description: 'Implicit IAM Role created for DmarcFunction function'
+    Value: !GetAtt DmarcFunctionRole.Arn
+  DmarcBucketName:
+    Value: !Ref DmarcBucket
+  DmarcQueueUrl:
+    Value: !Ref DmarcQueue
+  DmarcQueueArn:
+    Value: !GetAtt DmarcQueue.Arn

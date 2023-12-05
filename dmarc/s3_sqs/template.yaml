@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: dmarc processing
+
+Resources:
+  DmarcBucket:
+    Type: AWS::S3::Bucket
+    DependsOn:
+      - DmarcQueuePolicy
+    Properties:
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: 's3:ObjectCreated:Put'
+            Queue: !GetAtt DmarcQueue.Arn
+
+  DmarcQueuePolicy:
+    Type: 'AWS::SQS::QueuePolicy'
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Id: QueuePolicy
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 's3.amazonaws.com'
+            Action:
+              - 'sqs:SendMessage'
+            Resource: !GetAtt DmarcQueue.Arn
+      Queues:
+        - !Ref DmarcQueue
+
+  DmarcQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 305 # should be greater that lambda timeout
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 3
+
+  # https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+
+Outputs:
+  DmarcBucketName:
+    Value: !Ref DmarcBucket
+  DmarcQueueUrl:
+    Value: !Ref DmarcQueue
+  DmarcQueueArn:
+    Value: !GetAtt DmarcQueue.Arn

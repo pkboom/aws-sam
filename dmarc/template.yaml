@@ -21,6 +21,11 @@ Resources:
     Properties:
       Location: kinesis/template.yaml
 
+  S3SQS:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: s3_sqs/template.yaml
+
   Lambda:
     Type: AWS::Serverless::Application
     Properties:
@@ -31,6 +36,8 @@ Resources:
         ElastiCacheRedisClusterEndpoint: !GetAtt Redis.Outputs.ElastiCacheRedisClusterEndpoint
         KinesisStreamName: !GetAtt Kinesis.Outputs.KinesisStreamName
         KinesisStreamArn: !GetAtt Kinesis.Outputs.KinesisStreamArn
+        DmarcBucketName: !GetAtt S3SQS.Outputs.DmarcBucketName
+        DmarcQueueArn: !GetAtt S3SQS.Outputs.DmarcQueueArn
 
 Outputs:
   PrivateSubnetId:
@@ -39,7 +46,7 @@ Outputs:
     Value: !GetAtt VPC.Outputs.SecurityGroupId
   ElastiCacheRedisClusterEndpoint:
     Value: !GetAtt Redis.Outputs.ElastiCacheRedisClusterEndpoint
-  MailBucketName:
-    Value: !GetAtt Lambda.Outputs.MailBucketName
-  EmailQueueUrl:
-    Value: !GetAtt Lambda.Outputs.EmailQueueUrl
+  DmarcBucketName:
+    Value: !GetAtt S3SQS.Outputs.DmarcBucketName
+  DmarcQueueUrl:
+    Value: !GetAtt S3SQS.Outputs.DmarcQueueUrl

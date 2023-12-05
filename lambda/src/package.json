@@ -1,0 +1,9 @@
+{
+  "name": "hello_world",
+  "version": "1.0.0",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "test": "mocha tests/unit/"
+  }
+}
