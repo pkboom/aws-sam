@@ -34,7 +34,7 @@ Resources:
       Environment:
         Variables:
           REDIS_HOST_ENDPOINT: !Ref ElastiCacheRedisClusterEndpoint
-          MAILBUCKET_NAME: !Ref DmarcBucket
+          BUCKET_NAME: !Ref DmarcBucket
           KINESIS_ARN: !Ref KinesisStreamArn
       Policies:
         # - S3ReadPolicy:

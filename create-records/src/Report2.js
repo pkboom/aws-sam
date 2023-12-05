@@ -16,7 +16,7 @@ class Report {
 
   async getMessage(event) {
     let command = new GetObjectCommand({
-      Bucket: process.env.MAILBUCKET_NAME,
+      Bucket: process.env.BUCKET_NAME,
       // Key: event.Records[0].body,
       Key: 'google.eml',
     })

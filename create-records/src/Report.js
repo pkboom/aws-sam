@@ -31,7 +31,7 @@ class Report {
     let key = 'google.eml'
 
     let command = new GetObjectCommand({
-      Bucket: process.env.MAILBUCKET_NAME,
+      Bucket: process.env.BUCKET_NAME,
       Key: key,
     })
 
@@ -119,7 +119,7 @@ class Report {
 
     // await this.s3Client.send(
     //   new PutObjectCommand({
-    //     Bucket: process.env.MAILBUCKET_NAME,
+    //     Bucket: process.env.BUCKET_NAME,
     //     Key: 'reverses_lookup.json',
     //     Body: JSON.stringify(this.reverses),
     //   }),

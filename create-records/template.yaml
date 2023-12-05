@@ -22,7 +22,7 @@ Resources:
         - x86_64
       Environment:
         Variables:
-          MAILBUCKET_NAME: !Ref MailBucket
+          BUCKET_NAME: !Ref MailBucket
           KINESIS_ARN: !GetAtt KinesisStream.Arn
           # RECORDBUCKET_NAME: !Ref RecordBucket
       Policies:
