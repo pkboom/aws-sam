@@ -15,7 +15,7 @@ const run = async () => {
   for (const file of files) {
     let params = {
       Bucket: argv.outputValue,
-      Key: file,
+      Key: `email/${file}`,
       Body: readFileSync(path.join(dataPath, file)),
     }
 

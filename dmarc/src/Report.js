@@ -20,22 +20,26 @@ class Report {
     this.s3Client = new S3Client({})
     this.kinesisClient = new KinesisClient()
     this.limiter = new Bottleneck({
-      maxConcurrent: 500,
-      datastore: 'redis',
-      clientOptions: {
-        url: `redis://${process.env.REDIS_HOST_ENDPOINT}`,
-      },
+      maxConcurrent: 10,
+      minTime: 10,
     })
     this.redisClient = redis.createClient({
-      url: `redis://${process.env.REDIS_HOST_ENDPOINT}`,
+      url: `redis://${process.env.CACHE_ENDPOINT}`,
     })
   }
 
   async getMessage(event) {
-    console.log(JSON.parse(event.Records[0].body).Records[0])
+    let key
 
-    let key = JSON.parse(event.Records[0].body).Records[0].s3.object.key
-    //  key = 'u86npvbdq335llj1d62p1b5b1jmlmplsgip207g1'
+    try {
+      // key = JSON.parse(event?.Records[0].body).Records[0].s3.object.key
+      key = 'email/google.eml'
+      // key = 'email/whisnantstrategies.eml'
+    } catch (error) {
+      console.log(event)
+
+      throw new Error(errorMessages.badEvent)
+    }
 
     console.log(`key: ${key}`)
 
@@ -121,6 +125,8 @@ class Report {
   }
 
   async getAddresses() {
+    console.log('connecting to redis')
+
     await this.redisClient.connect()
 
     // dev
@@ -128,8 +134,10 @@ class Report {
     // let file = readFileSync('reverses.json', 'utf8')
     // let json = JSON.parse(file)
     // await this.redisClient.hSet(REVERSE_LOOKUP, json)
-    // let asdf = await this.redisClient.hGetAll(REVERSE_LOOKUP)
-    // console.log({ asdf })
+    // let getAll = await this.redisClient.hGetAll(REVERSE_LOOKUP)
+    // console.log({ getAll })
+    // this.redisClient.quit()
+    // throw new Error('test')
     // dev ends
 
     let ips = []
@@ -138,11 +146,11 @@ class Report {
       ips.push(this.records[i].row.source_ip)
     }
 
-    // console.log(`ips.length: ${ips.length}`)
+    console.log(`ips.length: ${ips.length}`)
 
     let uniqueIps = ips.filter((value, index, self) => self.indexOf(value) === index)
 
-    // console.log(`uniqueIps.length: ${uniqueIps.length}`)
+    console.log(`uniqueIps.length: ${uniqueIps.length}`)
 
     let newIps = []
 
@@ -280,6 +288,8 @@ class Report {
         payload = []
 
         console.log(current)
+
+        await wait(300)
       }
     }
   }
@@ -300,7 +310,7 @@ class Report {
         console.log(error)
       }
 
-      await wait(700)
+      await wait(300)
     }
   }
 

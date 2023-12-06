@@ -54,7 +54,7 @@ answers['command'] = await autocomplete({
 let stackOutputs = JSON.parse(execSync(`sam list stack-outputs --stack-name ${answers.stackName} --output json`).toString())
 
 if (['sendMessageBatch', 'sendMessage'].includes(answers.command)) {
-  console.log('It needs a url')
+  console.log('It needs a url.')
 }
 
 if (!['startMessageMoveTask'].includes(answers.command)) {
@@ -94,8 +94,11 @@ if (['startMessageMoveTask'].includes(answers.command)) {
   answers['destinationArn'] = stackOutputs.find(output => output.OutputKey === answers['destinationArnKey'])?.OutputValue
 }
 
-if (['sendMessageBatch'].includes(answers.command)) {
-  answers['count'] = await input({ message: 'How many times?' })
+if (['sendMessageBatch', 'updateShardCount'].includes(answers.command)) {
+  answers['count'] = await input({
+    message: 'Count?',
+    default: 1,
+  })
 }
 
 console.log(answers)

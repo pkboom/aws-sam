@@ -6,11 +6,8 @@ const run = async () => {
 
   if (args.command === 'startMessageMoveTask') {
     options += ` --sourceArn ${args.sourceArn} --destinationArn ${args.destinationArn}`
-  } else if (args.command === 'sendMessageBatch') {
-    options += ` --outputValue '${args.outputValue}' --count ${args.count}`
   } else {
-    options = `--stackName ${args.stackName} --outputValue '${args.outputValue}' --devDir ${args.devDir}`
-    //
+    options = `--stackName ${args.stackName} --outputValue '${args.outputValue}' --devDir ${args.devDir} --count ${args.count}`
   }
 
   let command = `node ${args.devDir}/${args.command}Command.js ${options}`

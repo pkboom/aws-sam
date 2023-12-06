@@ -9,14 +9,21 @@ try {
 }
 
 let limiter = new Bottleneck({
-  maxConcurrent: 500,
+  maxConcurrent: 2,
+  minTime: 1000,
+  id: 'reverseLookup',
+  datastore: 'redis',
+  clientOptions: {
+    host: '127.0.0.1',
+    port: 6379,
+  },
 })
 
 let ips = readFileSync('ips.json', 'utf8')
 
-let json = JSON.parse(ips)
+let newIps = JSON.parse(ips)
 
-let uniqueIps = json.filter((value, index, self) => self.indexOf(value) === index)
+let uniqueIps = newIps.filter((value, index, self) => self.indexOf(value) === index)
 
 console.log(uniqueIps.length)
 
@@ -24,7 +31,7 @@ const run = async () => {
   let reverses = []
 
   for (let i = 0; i < uniqueIps.length; i++) {
-    reverses.push(reverseLookup(json[i]))
+    reverses.push(reverseLookup(newIps[i]))
   }
 
   const result = await Promise.allSettled(reverses)
@@ -35,7 +42,6 @@ const run = async () => {
 run()
 
 function reverseLookup(ip) {
-  // console.log(ip)
   return limiter.schedule(
     {
       expiration: 5000,

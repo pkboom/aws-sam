@@ -14,6 +14,7 @@ export const errorMessages = {
   noAttachment: 'No attachment',
   badContentType: 'Bad content type',
   badKey: 'Bad key',
+  badEvent: 'Bad event',
   test: 'test',
 }
 

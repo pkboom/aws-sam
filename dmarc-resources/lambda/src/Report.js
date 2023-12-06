@@ -23,11 +23,11 @@ class Report {
       maxConcurrent: 500,
       datastore: 'redis',
       clientOptions: {
-        url: `redis://${process.env.REDIS_HOST_ENDPOINT}`,
+        url: `redis://${process.env.CACHE_ENDPOINT}`,
       },
     })
     this.redisClient = redis.createClient({
-      url: `redis://${process.env.REDIS_HOST_ENDPOINT}`,
+      url: `redis://${process.env.CACHE_ENDPOINT}`,
     })
   }
 

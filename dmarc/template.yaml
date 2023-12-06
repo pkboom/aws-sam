@@ -5,21 +5,28 @@ Description: dmarc
 Parameters:
   Env:
     Type: String
-    AllowedValues:
-      - dev
-      - prod
     Default: dev
 
 Mappings:
   EnvMapping:
     dev:
       DmarcBucketName: inboxmonster-dev-dmarc-isolated-us-east-2-datalake
-      DmarcQueueName: inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email
+      DmarcQueueUrl: https://sqs.us-east-2.amazonaws.com/524978277775/inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email
       DmarcQueueArn: arn:aws:sqs:us-east-2:524978277775:inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email
+      KinesisArn: arn:aws:kinesis:us-east-2:524978277775:stream/inboxmonster-dev-dmarc-isolated-us-east-2-stream
+      KinesisName: inboxmonster-dev-dmarc-isolated-us-east-2-stream
+      CacheEndpoint: inb-ca-1gegm4p9a3n56.n1ivfh.0001.use2.cache.amazonaws.com
+      SubnetIds: subnet-04e2da7ef878971a5,subnet-08294e103b50c7144
+      SecurityGroupIds: sg-0814a05a7dec5c820
     prod:
-      DmarcBucketName: inboxmonster-dev-dmarc-isolated-us-east-2-datalake
-      DmarcQueueName: inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email
-      DmarcQueueArn: arn:aws:sqs:us-east-2:524978277775:inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email
+      DmarcBucketName: prod
+      DmarcQueueUrl: prod
+      DmarcQueueArn: prod
+      KinesisArn: prod
+      KinesisName: prod
+      CacheEndpoint: prod
+      SubnetIds: prod
+      SecurityGroupIds: prod
 
 Resources:
   DmarcFunction:
@@ -28,8 +35,8 @@ Resources:
       CodeUri: src/
       Handler: app.handler
       Runtime: nodejs18.x
-      MemorySize: 4096
-      Timeout: 300
+      MemorySize: 1536
+      Timeout: 900
       Layers:
         - !Ref AppLayer
       # DeploymentPreference:
@@ -40,23 +47,18 @@ Resources:
         - x86_64
       Environment:
         Variables:
-          # REDIS_HOST_ENDPOINT: !Ref ElastiCacheRedisClusterEndpoint
+          CACHE_ENDPOINT: !FindInMap [EnvMapping, !Ref Env, CacheEndpoint]
           BUCKET_NAME: !FindInMap [EnvMapping, !Ref Env, DmarcBucketName]
-          # KINESIS_ARN: !Ref KinesisStreamArn
+          KINESIS_ARN: !FindInMap [EnvMapping, !Ref Env, KinesisArn]
       Policies:
-        # - S3ReadPolicy:
         - S3FullAccessPolicy:
             BucketName: !FindInMap [EnvMapping, !Ref Env, DmarcBucketName]
-        # - S3FullAccessPolicy:
-        #     BucketName: !Ref RecordBucket
-        # - KinesisCrudPolicy:
-        #     # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-template-list.html#kinesis-crud-policy
-        #     StreamName: !Ref KinesisStreamName
-      # VpcConfig:
-      #   SecurityGroupIds:
-      #     - !Ref SecurityGroupId
-      #   SubnetIds:
-      #     - !Ref PrivateSubnetId
+        - KinesisCrudPolicy:
+            # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-template-list.html#kinesis-crud-policy
+            StreamName: !FindInMap [EnvMapping, !Ref Env, KinesisName]
+      VpcConfig:
+        SecurityGroupIds: !Split [',', !FindInMap [EnvMapping, !Ref Env, SecurityGroupIds]]
+        SubnetIds: !Split [',', !FindInMap [EnvMapping, !Ref Env, SubnetIds]]
       Events:
         # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-eventsource.html
         Invoker:
@@ -65,7 +67,7 @@ Resources:
             Queue: !FindInMap [EnvMapping, !Ref Env, DmarcQueueArn]
             BatchSize: 1
             ScalingConfig:
-              MaximumConcurrency: 50
+              MaximumConcurrency: 20
 
   # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-layers.html
   AppLayer:
@@ -78,43 +80,12 @@ Resources:
     Metadata:
       BuildMethod: nodejs18.x
 
-  # DmarcQueuePolicy:
-  #   Type: 'AWS::SQS::QueuePolicy'
-  #   Properties:
-  #     PolicyDocument:
-  #       Version: '2012-10-17'
-  #       Id: QueuePolicy
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service: 's3.amazonaws.com'
-  #           Action:
-  #             - 'sqs:SendMessage'
-  #           Resource: !FindInMap [EnvMapping, !Ref Env, DmarcQueueArn]
-  #     Queues:
-  #       - !FindInMap [EnvMapping, !Ref Env, DmarcQueueName]
-
-  # DmarcQueue:
-  #   Type: AWS::SQS::Queue
-  #   Properties:
-  #     VisibilityTimeout: 305 # should be greater that lambda timeout
-  #     RedrivePolicy:
-  #       deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
-  #       maxReceiveCount: 3
-
-  # # https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html
-  # DeadLetterQueue:
-  #   Type: AWS::SQS::Queue
-
 Outputs:
-  DmarcFunction:
-    Value: !GetAtt DmarcFunction.Arn
-  DmarcFunctionIamRole:
-    Description: 'Implicit IAM Role created for DmarcFunction function'
-    Value: !GetAtt DmarcFunctionRole.Arn
   DmarcBucketName:
     Value: !FindInMap [EnvMapping, !Ref Env, DmarcBucketName]
-  DmarcQueueName:
-    Value: !FindInMap [EnvMapping, !Ref Env, DmarcQueueName]
+  DmarcQueueUrl:
+    Value: !FindInMap [EnvMapping, !Ref Env, DmarcQueueUrl]
   DmarcQueueArn:
     Value: !FindInMap [EnvMapping, !Ref Env, DmarcQueueArn]
+  KinesisName:
+    Value: !FindInMap [EnvMapping, !Ref Env, KinesisName]

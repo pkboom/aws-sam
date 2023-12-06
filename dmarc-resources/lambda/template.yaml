@@ -37,7 +37,7 @@ Resources:
         - x86_64
       Environment:
         Variables:
-          REDIS_HOST_ENDPOINT: !Ref ElastiCacheRedisClusterEndpoint
+          CACHE_ENDPOINT: !Ref ElastiCacheRedisClusterEndpoint
           BUCKET_NAME: !Ref DmarcBucketName
           KINESIS_ARN: !Ref KinesisStreamArn
       Policies:
