@@ -13,6 +13,7 @@ Mappings:
       DmarcBucketName: inboxmonster-dev-dmarc-isolated-us-east-2-datalake
       DmarcQueueUrl: https://sqs.us-east-2.amazonaws.com/524978277775/inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email
       DmarcQueueArn: arn:aws:sqs:us-east-2:524978277775:inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email
+      DeadLetterQueueUrl: https://sqs.us-east-2.amazonaws.com/524978277775/inboxmonster-dev-dmarc-isolated-us-east-2-dead-letter-datalake-email
       KinesisArn: arn:aws:kinesis:us-east-2:524978277775:stream/inboxmonster-dev-dmarc-isolated-us-east-2-stream
       KinesisName: inboxmonster-dev-dmarc-isolated-us-east-2-stream
       CacheEndpoint: inb-ca-1gegm4p9a3n56.n1ivfh.0001.use2.cache.amazonaws.com
@@ -22,6 +23,7 @@ Mappings:
       DmarcBucketName: prod
       DmarcQueueUrl: prod
       DmarcQueueArn: prod
+      DeadLetterQueueUrl: prod
       KinesisArn: prod
       KinesisName: prod
       CacheEndpoint: prod
@@ -59,15 +61,18 @@ Resources:
       VpcConfig:
         SecurityGroupIds: !Split [',', !FindInMap [EnvMapping, !Ref Env, SecurityGroupIds]]
         SubnetIds: !Split [',', !FindInMap [EnvMapping, !Ref Env, SubnetIds]]
+      # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-eventsource.html
       Events:
-        # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-eventsource.html
+        # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-sqs.html
         Invoker:
           Type: SQS
           Properties:
+            # Enabled: false
             Queue: !FindInMap [EnvMapping, !Ref Env, DmarcQueueArn]
             BatchSize: 1
             ScalingConfig:
-              MaximumConcurrency: 10
+              # scale up or down in half
+              MaximumConcurrency: 2 # minimum
 
   # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-layers.html
   AppLayer:
@@ -85,6 +90,8 @@ Outputs:
     Value: !FindInMap [EnvMapping, !Ref Env, DmarcBucketName]
   DmarcQueueUrl:
     Value: !FindInMap [EnvMapping, !Ref Env, DmarcQueueUrl]
+  DeadLetterQueueUrl:
+    Value: !FindInMap [EnvMapping, !Ref Env, DeadLetterQueueUrl]
   DmarcQueueArn:
     Value: !FindInMap [EnvMapping, !Ref Env, DmarcQueueArn]
   KinesisName:

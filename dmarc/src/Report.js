@@ -12,6 +12,7 @@ import dns from 'dns'
 
 class Report {
   constructor() {
+    this.recordName = null
     this.message = null
     this.records = null
     this.json = null
@@ -32,16 +33,16 @@ class Report {
     let key
 
     try {
-      // key = JSON.parse(event?.Records[0].body).Records[0].s3.object.key
+      key = JSON.parse(event?.Records[0].body).Records[0].s3.object.key
       // key = 'email/google.eml'
-      key = 'email/whisnantstrategies.eml'
+      // key = 'email/whisnantstrategies.eml'
     } catch (error) {
       console.log(event)
 
       throw new Error(errorMessages.badEvent)
     }
 
-    console.log(`key: ${key}`)
+    console.log(`Start processing [${key}]`)
 
     let command = new GetObjectCommand({
       Bucket: process.env.BUCKET_NAME,
@@ -73,8 +74,10 @@ class Report {
     }
 
     for (const attachment of parsed.attachments) {
-      console.log(attachment.filename)
-      console.log(attachment.contentType)
+      console.log(`[${this.recordName}] ${attachment.filename}`)
+      console.log(`[${this.recordName}] ${attachment.contentType}`)
+
+      this.recordName = attachment.filename
 
       if (attachment.contentType === 'application/zip') {
         try {
@@ -93,7 +96,7 @@ class Report {
       } else {
         // We need to get an email with a bad content type to test this.
 
-        console.log(`Bad content type: ${attachment.contentType}`)
+        console.log(`[${this.recordName}] bad content type: ${attachment.contentType}`)
 
         throw new Error(errorMessages.badContentType)
       }
@@ -104,7 +107,7 @@ class Report {
     let result = XMLValidator.validate(xml)
 
     if (result.err) {
-      console.log(`Bad xml: ${result.err.msg}`)
+      console.log(`[${this.recordName}] bad xml: ${result.err.msg}`)
 
       throw new Error(errorMessages.badXml)
     }
@@ -116,7 +119,7 @@ class Report {
     this.message = null
 
     // console.log(this.json)
-    console.log(`records.length: ${this.records.length}`)
+    console.log(`[${this.recordName}] records.length: ${this.records.length}`)
   }
 
   async emptyRedis() {
@@ -146,11 +149,11 @@ class Report {
       ips.push(this.records[i].row.source_ip)
     }
 
-    console.log(`ips.length: ${ips.length}`)
+    console.log(`[${this.recordName}] ips.length: ${ips.length}`)
 
     let uniqueIps = ips.filter((value, index, self) => self.indexOf(value) === index)
 
-    console.log(`uniqueIps.length: ${uniqueIps.length}`)
+    console.log(`[${this.recordName}] uniqueIps.length: ${uniqueIps.length}`)
 
     let newIps = []
 
@@ -179,6 +182,8 @@ class Report {
 
     let addresses = await Promise.allSettled(reverses)
 
+    console.log(`[${this.recordName}] addresses.length: ${addresses.length}`)
+
     // Don't put this in reverseLookup loop above.
     // Somehow an error is thrown.
     for (let i = 0; i < newIps.length; i++) {
@@ -187,9 +192,6 @@ class Report {
         value: newIps[i],
       })
     }
-
-    // console.log(addresses)
-    console.log(addresses.length)
 
     this.reverses = newIps.reduce((acc, ip, index) => {
       if (addresses[index].status === 'rejected') {
@@ -202,7 +204,7 @@ class Report {
     }, {})
 
     // console.log(this.reverses)
-    console.log(`this.reverses.length: ${Object.keys(this.reverses).length}`)
+    console.log(`[${this.recordName}] this.reverses.length: ${Object.keys(this.reverses).length}`)
 
     if (Object.keys(this.reverses).length !== 0) {
       await this.redisClient.hSet(REVERSE_LOOKUP, this.reverses)
@@ -212,18 +214,18 @@ class Report {
 
     Object.assign(this.reverses, existingIps)
 
-    console.log(`this.reverses.length: ${Object.keys(this.reverses).length}`)
+    console.log(`[${this.recordName}] this.reverses.length + existingIps: ${Object.keys(this.reverses).length}`)
 
     await this.redisClient.quit()
 
     // For dev
-    // await this.s3Client.send(
-    //   new PutObjectCommand({
-    //     Bucket: process.env.BUCKET_NAME,
-    //     Key: 'reverses_lookup.json',
-    //     Body: JSON.stringify(this.reverses),
-    //   }),
-    // )
+    await this.s3Client.send(
+      new PutObjectCommand({
+        Bucket: process.env.BUCKET_NAME,
+        Key: `reverses_lookup_${date}.json`,
+        Body: JSON.stringify(this.reverses),
+      }),
+    )
   }
 
   reverseLookup(ip) {
@@ -280,15 +282,6 @@ class Report {
         PartitionKey: `partitionKey-${i}`,
       })
 
-      // For dev
-      await this.s3Client.send(
-        new PutObjectCommand({
-          Bucket: process.env.BUCKET_NAME,
-          Key: `payload_${i}.json`,
-          Body: JSON.stringify(this.reverses),
-        }),
-      )
-
       let current = i + 1
 
       if (current === this.records.length || current % 500 === 0) {
@@ -296,9 +289,12 @@ class Report {
 
         payload = []
 
-        console.log(current)
+        console.log(`[${this.recordName}] sent ${current} records.`)
 
-        await wait(300)
+        // Maximum lambda concurrency is 2.
+        // A shard can take max 1MB / second or 1000 records / second.
+        // 1 Record =~ 1 kb
+        await wait(800 + Math.floor(Math.random() * 400))
       }
     }
   }
@@ -319,7 +315,7 @@ class Report {
         console.log(error)
       }
 
-      await wait(300)
+      await wait(800 + Math.floor(Math.random() * 400))
     }
   }
 
