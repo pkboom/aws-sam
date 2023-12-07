@@ -1,10 +1,8 @@
 import Report from './Report.js'
 import { errorMessages } from '/opt/nodejs/helper.js'
 
-export const handler = async (event, context) => {
+export const handler = async event => {
   try {
-    console.log('##### Processing dmarc report ######')
-
     let report = new Report()
 
     await report.getMessage(event)

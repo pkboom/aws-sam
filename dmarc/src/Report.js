@@ -74,10 +74,10 @@ class Report {
     }
 
     for (const attachment of parsed.attachments) {
-      console.log(`[${this.recordName}] ${attachment.filename}`)
-      console.log(`[${this.recordName}] ${attachment.contentType}`)
-
       this.recordName = attachment.filename
+
+      console.log(attachment.filename)
+      console.log(attachment.contentType)
 
       if (attachment.contentType === 'application/zip') {
         try {
@@ -104,6 +104,8 @@ class Report {
 
     let xml = content.toString()
 
+    console.log('validating xml')
+
     let result = XMLValidator.validate(xml)
 
     if (result.err) {
@@ -111,6 +113,8 @@ class Report {
 
       throw new Error(errorMessages.badXml)
     }
+
+    console.log('parsing')
 
     this.json = new XMLParser().parse(xml)
 
@@ -130,7 +134,17 @@ class Report {
   async getAddresses() {
     console.log('connecting to redis')
 
-    await this.redisClient.connect()
+    while (true) {
+      try {
+        await this.redisClient.connect()
+
+        break
+      } catch (error) {
+        console.log(error.message)
+      }
+
+      await wait(1000)
+    }
 
     // dev
     await this.emptyRedis()
@@ -219,13 +233,13 @@ class Report {
     await this.redisClient.quit()
 
     // For dev
-    await this.s3Client.send(
-      new PutObjectCommand({
-        Bucket: process.env.BUCKET_NAME,
-        Key: `reverses_lookup_${date}.json`,
-        Body: JSON.stringify(this.reverses),
-      }),
-    )
+    // await this.s3Client.send(
+    //   new PutObjectCommand({
+    //     Bucket: process.env.BUCKET_NAME,
+    //     Key: `reverses_lookup_${date}.json`,
+    //     Body: JSON.stringify(this.reverses),
+    //   }),
+    // )
   }
 
   reverseLookup(ip) {

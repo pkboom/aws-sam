@@ -37,7 +37,7 @@ Resources:
       CodeUri: src/
       Handler: app.handler
       Runtime: nodejs18.x
-      MemorySize: 1536
+      MemorySize: 2048
       Timeout: 900
       Layers:
         - !Ref AppLayer
