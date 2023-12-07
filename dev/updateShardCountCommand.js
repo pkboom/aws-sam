@@ -9,6 +9,6 @@ let command = `aws kinesis update-shard-count \
 
 console.log(command)
 
-let shards = JSON.parse(execSync(command).toString()).Shards.map(shard => shard.ShardId)
-
-console.log(`Total shards: ${shards.length}`)
+execSync(command, {
+  stdio: 'inherit',
+})

@@ -2,12 +2,14 @@ import { args } from './indexArguments.js'
 import { execSync } from 'child_process'
 
 const run = async () => {
-  let options
+  let options = `--stackName ${args.stackName} --outputValue '${args.outputValue}' --devDir ${args.devDir} --count ${args.count}`
 
   if (args.command === 'startMessageMoveTask') {
     options += ` --sourceArn ${args.sourceArn} --destinationArn ${args.destinationArn}`
+  } else if (args.command === 'setQueueAttributes') {
+    options += ` --visibilityTimeout ${args.visibilityTimeout}`
   } else {
-    options = `--stackName ${args.stackName} --outputValue '${args.outputValue}' --devDir ${args.devDir} --count ${args.count}`
+    //
   }
 
   let command = `node ${args.devDir}/${args.command}Command.js ${options}`

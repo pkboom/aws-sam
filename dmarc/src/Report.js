@@ -20,8 +20,8 @@ class Report {
     this.s3Client = new S3Client({})
     this.kinesisClient = new KinesisClient()
     this.limiter = new Bottleneck({
-      maxConcurrent: 10,
-      minTime: 10,
+      maxConcurrent: 100,
+      // minTime: 10,
     })
     this.redisClient = redis.createClient({
       url: `redis://${process.env.CACHE_ENDPOINT}`,
@@ -33,8 +33,8 @@ class Report {
 
     try {
       // key = JSON.parse(event?.Records[0].body).Records[0].s3.object.key
-      key = 'email/google.eml'
-      // key = 'email/whisnantstrategies.eml'
+      // key = 'email/google.eml'
+      key = 'email/whisnantstrategies.eml'
     } catch (error) {
       console.log(event)
 
@@ -279,6 +279,15 @@ class Report {
         Data: Buffer.from(JSON.stringify(data)),
         PartitionKey: `partitionKey-${i}`,
       })
+
+      // For dev
+      await this.s3Client.send(
+        new PutObjectCommand({
+          Bucket: process.env.BUCKET_NAME,
+          Key: `payload_${i}.json`,
+          Body: JSON.stringify(this.reverses),
+        }),
+      )
 
       let current = i + 1
 

@@ -2,10 +2,9 @@ import { input } from '@inquirer/prompts'
 import autocomplete from 'inquirer-autocomplete-standalone'
 import fuzzy from 'fuzzy'
 import fs from 'fs'
-import { readdirSync, readFileSync } from 'fs'
+import { readdirSync } from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import toml from 'toml'
 import { execSync } from 'child_process'
 
 async function search(options, input = '') {
@@ -51,7 +50,13 @@ answers['command'] = await autocomplete({
   },
 })
 
-let stackOutputs = JSON.parse(execSync(`sam list stack-outputs --stack-name ${answers.stackName} --output json`).toString())
+let stackOutputs
+
+try {
+  stackOutputs = JSON.parse(execSync(`sam list stack-outputs --stack-name ${answers.stackName} --output json`).toString())
+} catch (error) {
+  throw new Error('You need to deploy the stack first.')
+}
 
 if (['sendMessageBatch', 'sendMessage'].includes(answers.command)) {
   console.log('It needs a url.')
@@ -98,6 +103,13 @@ if (['sendMessageBatch', 'updateShardCount'].includes(answers.command)) {
   answers['count'] = await input({
     message: 'Count?',
     default: 1,
+  })
+}
+
+if (['setQueueAttributes'].includes(answers.command)) {
+  answers['visibilityTimeout'] = await input({
+    message: 'VisibilityTimeout?',
+    default: 60,
   })
 }
 
