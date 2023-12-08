@@ -275,6 +275,7 @@ class Report {
 
       let data = {
         id: `${report_metadata.org_name}_${report_metadata.report_id}_${i}`,
+        to_address: record.identifiers.header_from,
         report_metadata,
         policy_published,
         record,
@@ -287,7 +288,7 @@ class Report {
 
       data.record.row = {
         ...data.record.row,
-        source_ip_details: this.reverses[record.row.source_ip],
+        source_ip_reverse: this.reverses[record.row.source_ip],
       }
 
       // PartitionKey: https://stackoverflow.com/a/48400535/22110543
@@ -303,7 +304,7 @@ class Report {
 
         payload = []
 
-        console.log(`[${this.recordName}] sent ${current} records.`)
+        console.log(`[${this.recordName}] sent ${current} record(s).`)
 
         // Maximum lambda concurrency is 2.
         // A shard can take max 1MB / second or 1000 records / second.

@@ -19,6 +19,7 @@ Mappings:
       CacheEndpoint: inb-ca-1gegm4p9a3n56.n1ivfh.0001.use2.cache.amazonaws.com
       SubnetIds: subnet-04e2da7ef878971a5,subnet-08294e103b50c7144
       SecurityGroupIds: sg-0814a05a7dec5c820
+      RetentionInDays: 1
     prod:
       DmarcBucketName: prod
       DmarcQueueUrl: prod
@@ -29,6 +30,7 @@ Mappings:
       CacheEndpoint: prod
       SubnetIds: prod
       SecurityGroupIds: prod
+      RetentionInDays: 7
 
 Resources:
   DmarcFunction:
@@ -84,6 +86,16 @@ Resources:
         - nodejs18.x
     Metadata:
       BuildMethod: nodejs18.x
+
+  # https://github.com/aws/serverless-application-model/issues/1216#issuecomment-546014606
+  # Make sure a log group with the same name doesn't exist.
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn:
+      - DmarcFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${DmarcFunction}
+      RetentionInDays: !FindInMap [EnvMapping, !Ref Env, RetentionInDays]
 
 Outputs:
   DmarcBucketName:

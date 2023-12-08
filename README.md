@@ -249,11 +249,16 @@ https://wander.science/articles/understanding-dmarc-reports
 
 https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/viewing_metrics_with_cloudwatch.html
 
-```sh
-aws cloudwatch list-metrics --namespace AWS/Lambda
+- Iterator Age
 
-aws cloudwatch list-metrics --namespace AWS/EC2
-```
+https://dashbird.io/blog/lambda-kinesis-trigger
+
+E.g. kinesis invokes a lambda.
+It tells us how long the message was in the stream before the Lambda read it.
+
+# Logs Insights
+
+https://cloudash.dev/blog/cloudwatch-logs-insights-examples
 
 # Docker
 
