@@ -37,11 +37,11 @@ answers['command'] = await autocomplete({
   },
 })
 
-if (['deleteLogGroup'].includes(answers.command)) {
+if (['deleteLogGroups'].includes(answers.command)) {
   // confirm if you want to delete all log groups
   answers['confirm'] = await confirm({
     message: 'Are you sure?',
-    initial: false,
+    default: false,
   })
 } else {
   answers['stackName'] = await autocomplete({

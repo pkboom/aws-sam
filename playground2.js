@@ -1,3 +1,9 @@
-let asdf = Math.floor(Math.random() * 3)
+import { XMLParser } from 'fast-xml-parser'
+import { simpleParser } from 'mailparser'
+import { readFileSync } from 'fs'
 
-console.log(asdf)
+let eml = readFileSync('hello.eml', 'utf8')
+
+let parsed = await simpleParser(eml.toString())
+
+console.log(parsed.from)
