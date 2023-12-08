@@ -152,7 +152,7 @@ class Report {
 
       data.record.row = {
         ...data.record.row,
-        source_ip_details: this.reverses[record.row.source_ip],
+        source_ip_reverse: this.reverses[record.row.source_ip],
       }
 
       // PartitionKey: https://stackoverflow.com/a/48400535/22110543

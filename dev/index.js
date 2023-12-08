@@ -8,6 +8,8 @@ const run = async () => {
     options += ` --sourceArn ${args.sourceArn} --destinationArn ${args.destinationArn}`
   } else if (args.command === 'setQueueAttributes') {
     options += ` --visibilityTimeout ${args.visibilityTimeout}`
+  } else if (args.command === 'deleteLogGroup') {
+    options += ` --confirm ${args.confirm}`
   } else {
     //
   }

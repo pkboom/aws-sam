@@ -73,7 +73,7 @@ class Record {
 
       record.row = {
         ...record.row,
-        source_ip_details: this.sourceIpDetails(record.record.row.source_ip),
+        source_ip_reverse: this.sourceIpDetails(record.record.row.source_ip),
       }
 
       // console.log(record)

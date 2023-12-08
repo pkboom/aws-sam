@@ -1,4 +1,4 @@
-import { input } from '@inquirer/prompts'
+import { input, confirm } from '@inquirer/prompts'
 import autocomplete from 'inquirer-autocomplete-standalone'
 import fuzzy from 'fuzzy'
 import fs from 'fs'
@@ -24,19 +24,6 @@ let devDir = path.dirname(fileURLToPath(import.meta.url))
 
 let answers = { devDir }
 
-answers['stackName'] = await autocomplete({
-  message: 'What is the stack name?',
-  source: async (input = '') => {
-    let stacks = readdirSync(path.join(devDir, '..'), { withFileTypes: true })
-      .filter(dir => dir.isDirectory())
-      .map(dir => dir.name)
-      .filter(dir => !dir.startsWith('.'))
-      .filter(dir => !['dev', 'node_modules'].includes(dir))
-
-    return await search(stacks, input)
-  },
-})
-
 answers['command'] = await autocomplete({
   message: 'What do you want to do?',
   source: async (input = '') => {
@@ -50,53 +37,72 @@ answers['command'] = await autocomplete({
   },
 })
 
-let stackOutputs
-
-try {
-  stackOutputs = JSON.parse(execSync(`sam list stack-outputs --stack-name ${answers.stackName} --output json`).toString())
-} catch (error) {
-  throw new Error('You need to deploy the stack first.')
-}
-
-if (['sendMessageBatch', 'sendMessage'].includes(answers.command)) {
-  console.log('It needs a url.')
-}
-
-if (!['startMessageMoveTask'].includes(answers.command)) {
-  answers['outputKey'] = await autocomplete({
-    message: 'What is the outputKey?',
+if (['deleteLogGroup'].includes(answers.command)) {
+  // confirm if you want to delete all log groups
+  answers['confirm'] = await confirm({
+    message: 'Are you sure?',
+    initial: false,
+  })
+} else {
+  answers['stackName'] = await autocomplete({
+    message: 'What is the stack name?',
     source: async (input = '') => {
-      let outputKeys = stackOutputs.map(output => output.OutputKey)
+      let stacks = readdirSync(path.join(devDir, '..'), { withFileTypes: true })
+        .filter(dir => dir.isDirectory())
+        .map(dir => dir.name)
+        .filter(dir => !dir.startsWith('.'))
+        .filter(dir => !['dev', 'node_modules'].includes(dir))
 
-      return await search(outputKeys, input)
+      return await search(stacks, input)
     },
   })
 
-  answers['outputValue'] = stackOutputs.find(output => output.OutputKey === answers['outputKey'])?.OutputValue
-}
+  let stackOutputs
 
-if (['startMessageMoveTask'].includes(answers.command)) {
-  answers['sourceArnKey'] = await autocomplete({
-    message: 'What is the sourceArn?',
-    source: async (input = '') => {
-      let outputKeys = stackOutputs.map(output => output.OutputKey)
+  try {
+    stackOutputs = JSON.parse(execSync(`sam list stack-outputs --stack-name ${answers.stackName} --output json`).toString())
+  } catch (error) {
+    throw new Error('You need to deploy the stack first.')
+  }
 
-      return await search(outputKeys, input)
-    },
-  })
+  if (['sendMessageBatch', 'sendMessage'].includes(answers.command)) {
+    console.log('It needs a url.')
+  }
 
-  answers['sourceArn'] = stackOutputs.find(output => output.OutputKey === answers['sourceArnKey'])?.OutputValue
+  if (['startMessageMoveTask'].includes(answers.command)) {
+    answers['sourceArnKey'] = await autocomplete({
+      message: 'What is the sourceArn?',
+      source: async (input = '') => {
+        let outputKeys = stackOutputs.map(output => output.OutputKey)
 
-  answers['destinationArnKey'] = await autocomplete({
-    message: 'What is the destinationArn?',
-    source: async (input = '') => {
-      let outputKeys = stackOutputs.map(output => output.OutputKey)
+        return await search(outputKeys, input)
+      },
+    })
 
-      return await search(outputKeys, input)
-    },
-  })
+    answers['sourceArn'] = stackOutputs.find(output => output.OutputKey === answers['sourceArnKey'])?.OutputValue
 
-  answers['destinationArn'] = stackOutputs.find(output => output.OutputKey === answers['destinationArnKey'])?.OutputValue
+    answers['destinationArnKey'] = await autocomplete({
+      message: 'What is the destinationArn?',
+      source: async (input = '') => {
+        let outputKeys = stackOutputs.map(output => output.OutputKey)
+
+        return await search(outputKeys, input)
+      },
+    })
+
+    answers['destinationArn'] = stackOutputs.find(output => output.OutputKey === answers['destinationArnKey'])?.OutputValue
+  } else {
+    answers['outputKey'] = await autocomplete({
+      message: 'What is the outputKey?',
+      source: async (input = '') => {
+        let outputKeys = stackOutputs.map(output => output.OutputKey)
+
+        return await search(outputKeys, input)
+      },
+    })
+
+    answers['outputValue'] = stackOutputs.find(output => output.OutputKey === answers['outputKey'])?.OutputValue
+  }
 }
 
 if (['sendMessageBatch', 'updateShardCount'].includes(answers.command)) {
