@@ -43,6 +43,7 @@ Resources:
       Architectures:
         - x86_64
 
+  # DHCP: https://www.youtube.com/watch?v=BNvxoO7DbGA&ab_channel=CloudDeepDive)
   VPC:
     Type: AWS::EC2::VPC
     Properties:

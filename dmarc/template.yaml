@@ -104,6 +104,7 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${DmarcFunction}
       RetentionInDays: !FindInMap [EnvMap, !Ref Env, RetentionInDays]
 
+  # https://www.youtube.com/watch?v=lHWrAAzoxJA&ab_channel=BeABetterDev
   FunctionErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: IsStagingOrProd
