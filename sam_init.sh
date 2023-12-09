@@ -16,3 +16,5 @@ sam init --runtime nodejs18.x --name $APP_NAME --no-interactive --dependency-man
 cd $APP_NAME
 
 find ./ -type f -exec sed -i '' -e 's/lambdaHandler/handler/g' {} \;
+
+echo '' >README.md
