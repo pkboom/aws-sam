@@ -17,7 +17,7 @@ cd $APP_NAME
 
 find ./ -type f -exec sed -i '' -e 's/lambdaHandler/handler/g' {} \;
 
-sed -i '' -e 's/hello-world/src/'
+sed -i '' -e 's/hello-world/src/' template.yaml
 
 mv hello-world src
 
