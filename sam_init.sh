@@ -4,7 +4,7 @@ if [ $# -lt 1 ]; then
   echo >&2 "
 Usage: ./sam_init <app-name>
 
-e.g. ./sam_init dmarc
+e.g. ./sam_init hello-world 
 "
   exit 1
 fi
