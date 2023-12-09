@@ -295,3 +295,7 @@ docker system prune -a
 127.0.0.1:6379> ping
 PONG
 ```
+
+# Alarm
+
+- When deleting SNS Subscriptions, pending confirmations cannot be deleted. After 3 days, it is automatically deleted by the Amazon SNS team.
