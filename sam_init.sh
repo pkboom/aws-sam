@@ -17,4 +17,8 @@ cd $APP_NAME
 
 find ./ -type f -exec sed -i '' -e 's/lambdaHandler/handler/g' {} \;
 
+sed -i '' -e 's/hello-world/src/'
+
+mv hello-world src
+
 echo '' >README.md
