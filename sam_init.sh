@@ -17,8 +17,16 @@ cd $APP_NAME
 
 find ./ -type f -exec sed -i '' -e 's/lambdaHandler/handler/g' {} \;
 
+mv hello-world src
+
 sed -i '' -e 's/hello-world/src/' template.yaml
 
-mv hello-world src
+sed -i '' -E -e '/^(# |  #).*/d' template.yaml
+
+sed -i '' -E -e 's/# .*//g' template.yaml
+
+sed -i '' -E -e '/^(\/\*| \*).*/d' src/app.mjs
+
+sed -i '' -E -e '/^$/d' src/app.mjs
 
 echo '' >README.md
