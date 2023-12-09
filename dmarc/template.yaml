@@ -8,7 +8,7 @@ Parameters:
     Default: dev
 
 Mappings:
-  EnvMapping:
+  EnvMap:
     dev:
       DmarcBucketName: inboxmonster-dev-dmarc-isolated-us-east-2-datalake
       DmarcQueueUrl: https://sqs.us-east-2.amazonaws.com/524978277775/inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email
@@ -20,6 +20,7 @@ Mappings:
       SubnetIds: subnet-04e2da7ef878971a5,subnet-08294e103b50c7144
       SecurityGroupIds: sg-0814a05a7dec5c820
       RetentionInDays: 1
+      Alarm: false
     prod:
       DmarcBucketName: prod
       DmarcQueueUrl: prod
@@ -31,6 +32,10 @@ Mappings:
       SubnetIds: prod
       SecurityGroupIds: prod
       RetentionInDays: 7
+      Alarm: true
+
+Conditions:
+  IsStagingOrProd: !Not [!Equals [!Ref Env, dev]]
 
 Resources:
   DmarcFunction:
@@ -43,26 +48,28 @@ Resources:
       Timeout: 900
       Layers:
         - !Ref AppLayer
-      # DeploymentPreference:
-      #   Type: AllAtOnce
-      #   Alarms:
-      #     - Ref: RecordsFunctionErrorAlarm
+      AutoPublishAlias: live
+      DeploymentPreference:
+        Enabled: !FindInMap [EnvMap, !Ref Env, Alarm]
+        Type: AllAtOnce
+        Alarms:
+          - Ref: FunctionErrorAlarm
       Architectures:
         - x86_64
       Environment:
         Variables:
-          CACHE_ENDPOINT: !FindInMap [EnvMapping, !Ref Env, CacheEndpoint]
-          BUCKET_NAME: !FindInMap [EnvMapping, !Ref Env, DmarcBucketName]
-          KINESIS_ARN: !FindInMap [EnvMapping, !Ref Env, KinesisArn]
+          CACHE_ENDPOINT: !FindInMap [EnvMap, !Ref Env, CacheEndpoint]
+          BUCKET_NAME: !FindInMap [EnvMap, !Ref Env, DmarcBucketName]
+          KINESIS_ARN: !FindInMap [EnvMap, !Ref Env, KinesisArn]
       Policies:
         - S3FullAccessPolicy:
-            BucketName: !FindInMap [EnvMapping, !Ref Env, DmarcBucketName]
+            BucketName: !FindInMap [EnvMap, !Ref Env, DmarcBucketName]
         - KinesisCrudPolicy:
             # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-template-list.html#kinesis-crud-policy
-            StreamName: !FindInMap [EnvMapping, !Ref Env, KinesisName]
+            StreamName: !FindInMap [EnvMap, !Ref Env, KinesisName]
       VpcConfig:
-        SecurityGroupIds: !Split [',', !FindInMap [EnvMapping, !Ref Env, SecurityGroupIds]]
-        SubnetIds: !Split [',', !FindInMap [EnvMapping, !Ref Env, SubnetIds]]
+        SecurityGroupIds: !Split [',', !FindInMap [EnvMap, !Ref Env, SecurityGroupIds]]
+        SubnetIds: !Split [',', !FindInMap [EnvMap, !Ref Env, SubnetIds]]
       # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-eventsource.html
       Events:
         # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-sqs.html
@@ -70,7 +77,7 @@ Resources:
           Type: SQS
           Properties:
             # Enabled: false
-            Queue: !FindInMap [EnvMapping, !Ref Env, DmarcQueueArn]
+            Queue: !FindInMap [EnvMap, !Ref Env, DmarcQueueArn]
             BatchSize: 1
             ScalingConfig:
               # scale up or down in half
@@ -95,16 +102,49 @@ Resources:
       - DmarcFunction
     Properties:
       LogGroupName: !Sub /aws/lambda/${DmarcFunction}
-      RetentionInDays: !FindInMap [EnvMapping, !Ref Env, RetentionInDays]
+      RetentionInDays: !FindInMap [EnvMap, !Ref Env, RetentionInDays]
+
+  FunctionErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: IsStagingOrProd
+    Properties:
+      MetricName: Errors
+      AlarmDescription: Fire alarm if more than 3 errors occur in any 60 second period
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Threshold: 2
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 3
+      Dimensions:
+        - Name: Resource
+          Value: !Sub '${DmarcFunction}:live'
+        - Name: FunctionName
+          Value: !Ref DmarcFunction
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmNotification
+
+  AlarmNotification:
+    Type: AWS::SNS::Topic
+    Condition: IsStagingOrProd
+    Properties:
+      Subscription:
+        - Endpoint: keunbae@inboxmonster.com
+          Protocol: email
+      TopicName: dmarc-alarm-notification
 
 Outputs:
   DmarcBucketName:
-    Value: !FindInMap [EnvMapping, !Ref Env, DmarcBucketName]
+    Value: !FindInMap [EnvMap, !Ref Env, DmarcBucketName]
   DmarcQueueUrl:
-    Value: !FindInMap [EnvMapping, !Ref Env, DmarcQueueUrl]
+    Value: !FindInMap [EnvMap, !Ref Env, DmarcQueueUrl]
   DeadLetterQueueUrl:
-    Value: !FindInMap [EnvMapping, !Ref Env, DeadLetterQueueUrl]
+    Value: !FindInMap [EnvMap, !Ref Env, DeadLetterQueueUrl]
   DmarcQueueArn:
-    Value: !FindInMap [EnvMapping, !Ref Env, DmarcQueueArn]
+    Value: !FindInMap [EnvMap, !Ref Env, DmarcQueueArn]
   KinesisName:
-    Value: !FindInMap [EnvMapping, !Ref Env, KinesisName]
+    Value: !FindInMap [EnvMap, !Ref Env, KinesisName]
+  IsStagingOrProd:
+    Value: !If [IsStagingOrProd, 'staging or prod', 'dev']

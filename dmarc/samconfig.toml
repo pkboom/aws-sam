@@ -19,13 +19,6 @@ resolve_s3 = true
 s3_prefix = "dmarc"
 region = "us-east-2"
 image_repositories = []
-parameter_overrides = [
-  "DmarcBucketName=inboxmonster-dev-dmarc-isolated-us-east-2-datalake",
-  "DmarcQueueUrl=https://sqs.us-east-2.amazonaws.com/524978277775/inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email",
-  "DmarcQueueArn=arn:aws:sqs:us-east-2:524978277775:inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email",
-  "KinesisStreamArn=arn:aws:kinesis:us-east-2:524978277775:stream/inboxmonster-dev-dmarc-isolated-us-east-2-stream",
-  "KinesisStreamName=inboxmonster-dev-dmarc-isolated-us-east-2-stream",
-]
 
 [default.package.parameters]
 resolve_s3 = true
