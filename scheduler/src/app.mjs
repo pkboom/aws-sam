@@ -6,6 +6,7 @@ export const handler = async (event, context) => {
   try {
     console.log('######################### hit scheduler #########################')
     console.log(currentTimestamp())
+    // https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/cloudwatch-logs/command/StartQueryCommand/
 
     //  print uuid
     console.log(uuidv4())
