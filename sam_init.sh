@@ -22,13 +22,10 @@ find ./ -type f -exec sed -i '' -e 's/lambdaHandler/handler/g' {} \;
 mv hello-world src
 
 sed -i '' -e 's/hello-world/src/' template.yaml
-
 sed -i '' -E -e '/^(# |  #).*/d' template.yaml
-
 sed -i '' -E -e 's/# .*//g' template.yaml
 
 sed -i '' -E -e '/^(\/\*| \*).*/d' src/app.mjs
-
 sed -i '' -E -e '/^$/d' src/app.mjs
 
 # Empty README.md
@@ -43,3 +40,4 @@ sed -i '' -e 's/"license": "ISC"/"license": "ISC",\n  "type": "module"/g' packag
 # Insert "type": "module" to package.json
 cd ../src
 sed -i '' -e 's/"license": "MIT"/"license": "MIT",\n  "type": "module"/g' package.json
+npm i
