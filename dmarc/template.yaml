@@ -19,7 +19,6 @@ Mappings:
       CacheEndpoint: inb-ca-1gegm4p9a3n56.n1ivfh.0001.use2.cache.amazonaws.com
       SubnetIds: subnet-04e2da7ef878971a5,subnet-08294e103b50c7144
       SecurityGroupIds: sg-0814a05a7dec5c820
-      RetentionInDays: 1
       Alarm: false
     prod:
       DmarcBucketName: prod
@@ -31,7 +30,6 @@ Mappings:
       CacheEndpoint: prod
       SubnetIds: prod
       SecurityGroupIds: prod
-      RetentionInDays: 7
       Alarm: true
 
 Conditions:
@@ -61,11 +59,11 @@ Resources:
           CACHE_ENDPOINT: !FindInMap [EnvMap, !Ref Env, CacheEndpoint]
           BUCKET_NAME: !FindInMap [EnvMap, !Ref Env, DmarcBucketName]
           KINESIS_ARN: !FindInMap [EnvMap, !Ref Env, KinesisArn]
+      # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
       Policies:
         - S3FullAccessPolicy:
             BucketName: !FindInMap [EnvMap, !Ref Env, DmarcBucketName]
         - KinesisCrudPolicy:
-            # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-template-list.html#kinesis-crud-policy
             StreamName: !FindInMap [EnvMap, !Ref Env, KinesisName]
       VpcConfig:
         SecurityGroupIds: !Split [',', !FindInMap [EnvMap, !Ref Env, SecurityGroupIds]]
@@ -102,7 +100,7 @@ Resources:
       - DmarcFunction
     Properties:
       LogGroupName: !Sub /aws/lambda/${DmarcFunction}
-      RetentionInDays: !FindInMap [EnvMap, !Ref Env, RetentionInDays]
+      RetentionInDays: 7
 
   # https://www.youtube.com/watch?v=lHWrAAzoxJA&ab_channel=BeABetterDev
   FunctionErrorAlarm:

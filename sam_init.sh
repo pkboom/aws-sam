@@ -24,7 +24,7 @@ mv hello-world src
 sed -i '' -e 's/hello-world/src/' template.yaml
 sed -i '' -E -e '/^(# |  #).*/d' template.yaml
 sed -i '' -E -e 's/# .*//g' template.yaml
-sed -i '' -E -e 's/HelloWorldFunction/Function/g' template.yaml
+sed -i '' -E -e 's/Timeout:.*/Timeout: 60/g' template.yaml
 
 sed -i '' -E -e '/^(\/\*| \*).*/d' src/app.mjs
 sed -i '' -E -e '/^$/d' src/app.mjs

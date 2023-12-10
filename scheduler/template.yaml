@@ -3,28 +3,40 @@ Transform: AWS::Serverless-2016-10-31
 Description: dmarc scheduler
 
 Resources:
-  Function:
+  ScheduleFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/
       Handler: app.handler
       Runtime: nodejs18.x
-      Timeout: 3
+      Timeout: 60
       Architectures:
         - x86_64
       Layers:
         - !Ref Layer
+      # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+      Policies:
+        #  https://serverlessland.com/patterns/lambda-ses
+        - SESCrudPolicy:
+            IdentityName: '*'
+        - Statement:
+            - Sid: DmarcSchedulePolicy
+              Effect: Allow
+              Action:
+                - logs:StartQuery
+                - logs:GetQueryResults
+              Resource: '*'
 
   Schedule:
     Type: AWS::Scheduler::Schedule
     Properties:
       Name: dmarc-schedule
-      # ScheduleExpression: 'rate(1 minute)'
-      ScheduleExpression: 'cron(0 0 * * ? *)'
+      ScheduleExpression: 'rate(1 minute)'
+      # ScheduleExpression: 'cron(0 0 * * ? *)'
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
-        Arn: !GetAtt Function.Arn
+        Arn: !GetAtt ScheduleFunction.Arn
         RoleArn: !GetAtt ScheduleRole.Arn
 
   ScheduleRole:
@@ -48,14 +60,22 @@ Resources:
                 Action:
                   - 'lambda:InvokeFunction'
                 Resource:
-                  - !GetAtt Function.Arn
+                  - !GetAtt ScheduleFunction.Arn
 
   Layer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      Description: app specific deps
+      Description: dmarc schedule layer
       ContentUri: layer
       CompatibleRuntimes:
         - nodejs18.x
     Metadata:
       BuildMethod: nodejs18.x
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn:
+      - ScheduleFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ScheduleFunction}
+      RetentionInDays: 7

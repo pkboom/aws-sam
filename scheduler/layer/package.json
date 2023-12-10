@@ -12,6 +12,6 @@
   "type": "module",
   "dependencies": {
     "@aws-sdk/client-cloudwatch-logs": "^3.470.0",
-    "uuid": "^9.0.1"
+    "@aws-sdk/client-ses": "^3.470.0"
   }
 }

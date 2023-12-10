@@ -38,12 +38,16 @@ answers['command'] = await autocomplete({
 })
 
 if (['deleteLogGroups'].includes(answers.command)) {
-  // confirm if you want to delete all log groups
   answers['confirm'] = await confirm({
-    message: 'Are you sure?',
+    message: 'Are you sure to delete all log groups?',
     default: false,
   })
+} else if (['verifyEmailIdentity'].includes(answers.command)) {
+  answers['email'] = await input({
+    message: 'Email to verify?',
+  })
 } else {
+  // These commands need a stack name.
   answers['stackName'] = await autocomplete({
     message: 'What is the stack name?',
     source: async (input = '') => {
