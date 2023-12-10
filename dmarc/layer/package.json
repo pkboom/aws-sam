@@ -11,9 +11,5 @@
     "mailparser": "^3.6.5",
     "redis": "^4.6.11",
     "unzipper": "^0.10.14"
-  },
-  "devDependencies": {
-    "chai": "^4.3.6",
-    "mocha": "^10.1.0"
   }
 }

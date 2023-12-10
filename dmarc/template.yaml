@@ -47,7 +47,7 @@ Resources:
       MemorySize: 2048
       Timeout: 900
       Layers:
-        - !Ref AppLayer
+        - !Ref Layer
       AutoPublishAlias: live
       DeploymentPreference:
         Enabled: !FindInMap [EnvMap, !Ref Env, Alarm]
@@ -84,10 +84,10 @@ Resources:
               MaximumConcurrency: 2 # minimum
 
   # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-layers.html
-  AppLayer:
+  Layer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      Description: app specific deps
+      Description: dmarc layer
       ContentUri: layer
       CompatibleRuntimes:
         - nodejs18.x

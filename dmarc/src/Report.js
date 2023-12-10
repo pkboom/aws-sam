@@ -5,9 +5,9 @@ import zlib from 'zlib'
 import { simpleParser } from 'mailparser'
 import unzipper from 'unzipper'
 import { KinesisClient, PutRecordsCommand } from '@aws-sdk/client-kinesis'
-import { errorMessages, REVERSE_LOOKUP, REVERSE_LOOKUP_INDEX } from '/opt/nodejs/helper.js'
+import { errorMessages, REVERSE_LOOKUP, REVERSE_LOOKUP_INDEX } from './helper.js'
 import Bottleneck from 'bottleneck'
-import { wait } from '/opt/nodejs/helper.js'
+import { wait } from './helper.js'
 import dns from 'dns'
 
 class Report {

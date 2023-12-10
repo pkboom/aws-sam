@@ -1,5 +1,5 @@
 import Report from './Report.js'
-import { errorMessages } from '/opt/nodejs/helper.js'
+import { errorMessages } from './helper.js'
 
 export const handler = async event => {
   try {
