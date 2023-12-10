@@ -3,10 +3,10 @@ Transform: AWS::Serverless-2016-10-31
 Description: dmarc scheduler
 
 Resources:
-  ScheduledFunction:
+  Function:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: hello-world/
+      CodeUri: src/
       Handler: app.handler
       Runtime: nodejs18.x
       Timeout: 3
@@ -21,7 +21,7 @@ Resources:
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
-        Arn: !GetAtt ScheduledFunction.Arn
+        Arn: !GetAtt Function.Arn
         RoleArn: !GetAtt ScheduleRole.Arn
 
   ScheduleRole:
@@ -45,4 +45,4 @@ Resources:
                 Action:
                   - 'lambda:InvokeFunction'
                 Resource:
-                  - !GetAtt ScheduledFunction.Arn
+                  - !GetAtt Function.Arn

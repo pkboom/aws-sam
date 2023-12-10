@@ -1,6 +1,6 @@
 export const handler = async (event, context) => {
   try {
-    console.log('hit')
+    console.log('######################### hit scheduler #########################')
 
     return {
       statusCode: 200,
