@@ -17,7 +17,8 @@ Resources:
     Type: AWS::Scheduler::Schedule
     Properties:
       Name: dmarc-schedule
-      ScheduleExpression: 'rate(1 minute)'
+      # ScheduleExpression: 'rate(1 minute)'
+      ScheduleExpression: 'cron(0 0 * * ? *)'
       FlexibleTimeWindow:
         Mode: 'OFF'
       Target:
