@@ -12,6 +12,8 @@ Resources:
       Timeout: 3
       Architectures:
         - x86_64
+      Layers:
+        - !Ref Layer
 
   Schedule:
     Type: AWS::Scheduler::Schedule
@@ -47,3 +49,13 @@ Resources:
                   - 'lambda:InvokeFunction'
                 Resource:
                   - !GetAtt Function.Arn
+
+  Layer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      Description: app specific deps
+      ContentUri: layer
+      CompatibleRuntimes:
+        - nodejs18.x
+    Metadata:
+      BuildMethod: nodejs18.x

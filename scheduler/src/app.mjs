@@ -1,7 +1,14 @@
+// import uuid
+import { v4 as uuidv4 } from 'uuid'
+import { currentTimestamp } from './helper.js'
+
 export const handler = async (event, context) => {
   try {
     console.log('######################### hit scheduler #########################')
-    console.log(event)
+    console.log(currentTimestamp())
+
+    //  print uuid
+    console.log(uuidv4())
 
     return {
       statusCode: 200,
