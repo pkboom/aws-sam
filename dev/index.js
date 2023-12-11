@@ -16,8 +16,6 @@ const run = async () => {
     options += ` --logGroupName ${args.logGroupName} --retentionInDays ${args.retentionInDays}`
   } else if (args.command === 'verifyEmailIdentityCommand') {
     options += ` --email ${args.email}`
-  } else {
-    //
   }
 
   let command = `node ${args.devDir}/${args.command}.js ${options}`
