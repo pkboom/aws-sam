@@ -30,25 +30,41 @@ answers['command'] = await autocomplete({
     let commands = fs
       .readdirSync(devDir)
       .filter(file => file.includes('Command'))
-      .map(file => file.replace('Command.js', ''))
+      .map(file => file.replace('.js', ''))
       .sort()
 
     return await search(commands, input)
   },
 })
 
-if (['deleteLogGroups'].includes(answers.command)) {
+if (['deleteLogGroupsCommand'].includes(answers.command)) {
   answers['confirm'] = await confirm({
     message: 'Are you sure to delete all log groups?',
     default: false,
   })
-} else if (['verifyEmailIdentity'].includes(answers.command)) {
+} else if (['verifyEmailIdentityCommand'].includes(answers.command)) {
   answers['email'] = await input({
     message: 'Email to verify?',
   })
+} else if (['putRetentionPolicyCommand'].includes(answers.command)) {
+  answers['logGroupName'] = await autocomplete({
+    message: 'Log group name?',
+    source: async (input = '') => {
+      let logGroups = JSON.parse(execSync('aws logs describe-log-groups').toString()).logGroups.map(
+        logGroup => logGroup.logGroupName,
+      )
+
+      return await search(logGroups, input)
+    },
+  })
+
+  answers['retentionInDays'] = await input({
+    message: 'Retion in days',
+    default: 7,
+  })
 } else {
   // These commands need a stack name.
-  answers['stackName'] = await autocomplete({
+  let stackName = await autocomplete({
     message: 'What is the stack name?',
     source: async (input = '') => {
       let stacks = readdirSync(path.join(devDir, '..'), { withFileTypes: true })
@@ -64,16 +80,16 @@ if (['deleteLogGroups'].includes(answers.command)) {
   let stackOutputs
 
   try {
-    stackOutputs = JSON.parse(execSync(`sam list stack-outputs --stack-name ${answers.stackName} --output json`).toString())
+    stackOutputs = JSON.parse(execSync(`sam list stack-outputs --stack-name ${stackName} --output json`).toString())
   } catch (error) {
     throw new Error('You need to deploy the stack first.')
   }
 
-  if (['sendMessageBatch', 'sendMessage'].includes(answers.command)) {
+  if (['sendMessageBatch', 'sendMessageCommand'].includes(answers.command)) {
     console.log('It needs a url.')
   }
 
-  if (['startMessageMoveTask'].includes(answers.command)) {
+  if (['startMessageMoveTaskCommand'].includes(answers.command)) {
     answers['sourceArnKey'] = await autocomplete({
       message: 'What is the sourceArn?',
       source: async (input = '') => {
@@ -94,7 +110,9 @@ if (['deleteLogGroups'].includes(answers.command)) {
       },
     })
 
-    answers['destinationArn'] = stackOutputs.find(output => output.OutputKey === answers['destinationArnKey'])?.OutputValue
+    answers['destinationArn'] = stackOutputs.find(
+      output => output.OutputKey === answers['destinationArnKey'],
+    )?.OutputValue
   } else {
     answers['outputKey'] = await autocomplete({
       message: 'What is the outputKey?',
@@ -109,14 +127,14 @@ if (['deleteLogGroups'].includes(answers.command)) {
   }
 }
 
-if (['sendMessageBatch', 'updateShardCount'].includes(answers.command)) {
+if (['sendMessageBatch', 'updateShardCountCommand'].includes(answers.command)) {
   answers['count'] = await input({
     message: 'Count?',
     default: 1,
   })
 }
 
-if (['setQueueAttributes'].includes(answers.command)) {
+if (['setQueueAttributesCommand'].includes(answers.command)) {
   answers['visibilityTimeout'] = await input({
     message: 'VisibilityTimeout?',
     default: 60,

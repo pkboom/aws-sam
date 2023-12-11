@@ -1,9 +1,9 @@
 import yargs from 'yargs/yargs'
 
 export const argv = yargs(process.argv.slice(2))
-  .option('sourceArn', {
+  .option('logGroupName', {
     type: 'string',
   })
-  .option('destinationArn', {
+  .option('retentionInDays', {
     type: 'string',
   }).argv
