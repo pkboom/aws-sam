@@ -16,13 +16,15 @@ export const handler = async (event, context) => {
       .setQuery(query())
       .run()
 
-    let body = ['Dmarc Processing', 'Period: 1 day', result]
+    let body = ['Period: 1 day', result]
+
+    await new Email().setSubject('Dmarc processing').setBody(body.join('\n')).send()
 
     result = await new Query().setFrom(yesterday).setTo(now).setLogGroup(scheduleLogGroupName).setQuery(query()).run()
 
-    body = body.concat('===\n', 'Scheduler', 'Period: 1 day', result)
+    body = ['Period: 1 day', result]
 
-    await new Email().setSubject('Dmarc processing').setBody(body.join('\n')).send()
+    await new Email().setSubject('Dmarc Scheduler').setBody(body.join('\n')).send()
 
     return {
       statusCode: 200,

@@ -23,7 +23,7 @@ class Email {
     return {
       Source: 'keunbae@inboxmonster.com',
       Destination: {
-        ToAddresses: ['ppotpo@gmail.com'],
+        ToAddresses: ['dev.inboxmonster@gmail.com'],
       },
       Message: {
         Subject: {
