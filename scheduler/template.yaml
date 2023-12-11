@@ -9,9 +9,12 @@ Resources:
       CodeUri: src/
       Handler: app.handler
       Runtime: nodejs18.x
-      Timeout: 60
+      Timeout: 30
       Architectures:
         - x86_64
+      Environment:
+        Variables:
+          DMARC_LOG_GROUP_NAME: /aws/lambda/dmarc-DmarcFunction-HcpHYxyv78EK
       Layers:
         - !Ref Layer
       # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
