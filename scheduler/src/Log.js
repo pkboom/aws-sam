@@ -43,6 +43,7 @@ class Log {
           result
             .filter(item => item.field !== '@ptr')
             .map(item => `${item.field}: ${item.value}`)
+            .map(item => item.replace('@', ''))
             .join('\n') + '\n',
       )
       .join('\n')

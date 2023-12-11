@@ -1,25 +1,33 @@
-import Log from './Log.js'
 import Email from './Email.js'
-
-const log = new Log()
+import Query from './Query.js'
 
 export const handler = async (event, context) => {
-  console.log(context)
-
   let scheduleLogGroupName = `/aws/lambda/${context.functionName}`
 
+  console.log(`scheduleLogGroupName: ${scheduleLogGroupName}`)
+
+  let now = new Date().getTime()
+
+  let yesterday = new Date(now - 1000 * 60 * 60 * 24).getTime()
+
   try {
-    // await log.startQuery(billedDurationInput())
+    let billedDurationResults = new Query()
+      .setFrom(now)
+      .setTo(yesterday)
+      .setLogGroup(process.env.DMARC_LOG_GROUP_NAME)
+      .setQuery(billedDurationQuery())
+      .run()
 
-    // let body = await log.getQueryResults()
+    let maxMemoryResults = new Query()
+      .setFrom(now)
+      .setTo(yesterday)
+      .setLogGroup(process.env.DMARC_LOG_GROUP_NAME)
+      .setQuery(maxMemoryQuery())
+      .run()
 
-    // new Email().setSubject('Billed duration of dmarc processing').setBody(body).send()
+    let body = ['Billed duration', billedDurationResults, '===', 'Max memory used', maxMemoryResults].join('\n')
 
-    // await log.startQuery(maxMemoryInput())
-
-    // let body = await log.getQueryResults()
-
-    new Email().setSubject('Dmarc processing').setBody(dmarcBody()).send()
+    new Email().setSubject('Dmarc processing').setBody(body).send()
 
     return {
       statusCode: 200,
@@ -31,61 +39,20 @@ export const handler = async (event, context) => {
   }
 }
 
-async function dmarcBody() {
-  let billedDurationResult = await billedDuration()
-  let maxMemoryResult = await maxMemory()
-
-  return ['Billed duration', billedDurationResult, '===', 'Max memory used', maxMemoryResult].join('\n')
+function billedDurationQuery() {
+  return `
+  filter @type = "REPORT"
+  | fields @requestId, @billedDuration
+  | sort by @billedDuration desc
+  | limit 3
+  `
 }
 
-async function billedDuration() {
-  await log.startQuery(billedDurationInput())
-
-  return await log.getQueryResults()
-}
-
-function billedDurationInput() {
-  let now = new Date().getTime()
-
-  let yesterday = new Date(now - 1000 * 60 * 60 * 24).getTime()
-
-  let queryString = `
-filter @type = "REPORT"
-| fields @requestId, @billedDuration
-| sort by @billedDuration desc
-| limit 3
-`
-
-  return {
-    logGroupName: process.env.DMARC_LOG_GROUP_NAME,
-    startTime: yesterday / 1000,
-    endTime: now / 1000,
-    queryString: queryString,
-  }
-}
-
-async function maxMemory() {
-  await log.startQuery(maxMemoryInput())
-
-  return await log.getQueryResults()
-}
-
-function maxMemoryInput() {
-  let now = new Date().getTime()
-
-  let yesterday = new Date(now - 1000 * 60 * 60 * 24).getTime()
-
-  let queryString = `
-filter @type = "REPORT"
-| fields @requestId, @maxMemoryUsed
-| sort by @maxMemoryUsed desc
-| limit 3
-`
-
-  return {
-    logGroupName: process.env.DMARC_LOG_GROUP_NAME,
-    startTime: yesterday / 1000,
-    endTime: now / 1000,
-    queryString: queryString,
-  }
+function maxMemoryQuery() {
+  return `
+  filter @type = "REPORT"
+  | fields @requestId, @maxMemoryUsed
+  | sort by @maxMemoryUsed desc
+  | limit 3
+  `
 }
