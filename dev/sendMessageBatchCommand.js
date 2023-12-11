@@ -1,5 +1,7 @@
 import { SQSClient, SendMessageBatchCommand } from '@aws-sdk/client-sqs'
-import { argv } from './sendMessageBatchArguments.js'
+import yargs from 'yargs/yargs'
+
+const argv = yargs(process.argv.slice(2)).argv
 
 const client = new SQSClient({})
 

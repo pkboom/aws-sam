@@ -1,5 +1,7 @@
 import { execSync } from 'child_process'
-import { argv } from './deleteLogGroupsArguments.js'
+import yargs from 'yargs/yargs'
+
+const argv = yargs(process.argv.slice(2)).argv
 
 let command = `aws logs describe-log-groups`
 

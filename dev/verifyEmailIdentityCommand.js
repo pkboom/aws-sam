@@ -1,5 +1,7 @@
-import { argv } from './verifyEmailIdentityArguments.js'
 import { execSync } from 'child_process'
+import yargs from 'yargs/yargs'
+
+const argv = yargs(process.argv.slice(2)).argv
 
 let command = `aws ses verify-email-identity --email-address ${argv.email} `
 

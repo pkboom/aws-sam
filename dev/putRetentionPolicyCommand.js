@@ -1,5 +1,7 @@
-import { argv } from './putRetentionPolicyArguments.js'
 import { execSync } from 'child_process'
+import yargs from 'yargs/yargs'
+
+const argv = yargs(process.argv.slice(2)).argv
 
 let command = `aws logs put-retention-policy --log-group-name ${argv.logGroupName} --retention-in-days ${argv.retentionInDays}`
 
