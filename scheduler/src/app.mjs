@@ -1,25 +1,25 @@
 import Log from './Log.js'
 import Email from './Email.js'
 
+const log = new Log()
+
 export const handler = async (event, context) => {
   console.log(context)
 
   let scheduleLogGroupName = `/aws/lambda/${context.functionName}`
 
-  let log = new Log()
-
   try {
-    await log.startQuery(billedDurationInput())
+    // await log.startQuery(billedDurationInput())
 
-    let body = await log.getQueryResults()
+    // let body = await log.getQueryResults()
 
-    new Email().setSubject('Billed duration of dmarc processing').setBody(body).send()
+    // new Email().setSubject('Billed duration of dmarc processing').setBody(body).send()
 
-    await log.startQuery(maxMemoryInput())
+    // await log.startQuery(maxMemoryInput())
 
-    body = await log.getQueryResults()
+    // let body = await log.getQueryResults()
 
-    new Email().setSubject('Max memory used of dmarc processing').setBody(body).send()
+    new Email().setSubject('Dmarc processing').setBody(body()).send()
 
     return {
       statusCode: 200,
@@ -29,6 +29,19 @@ export const handler = async (event, context) => {
 
     return err
   }
+}
+
+async function body() {
+  let billedDurationResult = await billedDuration()
+  let maxMemoryResult = await maxMemory()
+
+  return ['Billed duration of dmarc processing', billedDurationResult, 'Max memory used of dmarc processing', maxMemoryResult].join('\n')
+}
+
+async function billedDuration() {
+  await log.startQuery(billedDurationInput())
+
+  return await log.getQueryResults()
 }
 
 function billedDurationInput() {
@@ -49,6 +62,12 @@ filter @type = "REPORT"
     endTime: now / 1000,
     queryString: queryString,
   }
+}
+
+async function maxMemory() {
+  await log.startQuery(maxMemoryInput())
+
+  return await log.getQueryResults()
 }
 
 function maxMemoryInput() {
