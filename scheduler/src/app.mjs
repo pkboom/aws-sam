@@ -11,23 +11,18 @@ export const handler = async (event, context) => {
   let yesterday = new Date(now - 1000 * 60 * 60 * 24).getTime()
 
   try {
-    let billedDurationResults = new Query()
-      .setFrom(now)
-      .setTo(yesterday)
+    let result = await new Query()
+      .setFrom(yesterday)
+      .setTo(now)
       .setLogGroup(process.env.DMARC_LOG_GROUP_NAME)
-      .setQuery(billedDurationQuery())
+      .setQuery(dmarcQuery())
       .run()
 
-    let maxMemoryResults = new Query()
-      .setFrom(now)
-      .setTo(yesterday)
-      .setLogGroup(process.env.DMARC_LOG_GROUP_NAME)
-      .setQuery(maxMemoryQuery())
-      .run()
+    console.log(result)
 
-    let body = ['Billed duration', billedDurationResults, '===', 'Max memory used', maxMemoryResults].join('\n')
+    let body = [`Period: 1 day`, result].join('\n')
 
-    new Email().setSubject('Dmarc processing').setBody(body).send()
+    await new Email().setSubject('Dmarc processing').setBody(body).send()
 
     return {
       statusCode: 200,
@@ -39,20 +34,13 @@ export const handler = async (event, context) => {
   }
 }
 
-function billedDurationQuery() {
+function dmarcQuery() {
   return `
-  filter @type = "REPORT"
-  | fields @requestId, @billedDuration
-  | sort by @billedDuration desc
-  | limit 3
-  `
-}
-
-function maxMemoryQuery() {
-  return `
-  filter @type = "REPORT"
-  | fields @requestId, @maxMemoryUsed
-  | sort by @maxMemoryUsed desc
-  | limit 3
-  `
+filter @type = "REPORT"
+| stats 
+  max(@maxMemoryUsed / 1000 / 1000) as maxMemoryUsedMB,
+  max(@memorySize / 1000 / 1000) as provisionedMemoryMB,
+  provisionedMemoryMB - maxMemoryUsedMB as overProvisionedMB,
+  max(@billedDuration / 1000) as billedDurationSec
+`
 }

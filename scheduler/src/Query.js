@@ -21,14 +21,14 @@ class Query {
     return this
   }
 
-  setQuery(query) {
-    this.query = query
+  setLogGroup(logGroup) {
+    this.logGroup = logGroup
 
     return this
   }
 
-  setLogGroup(logGroup) {
-    this.logGroup = logGroup
+  setQuery(query) {
+    this.query = query
 
     return this
   }
@@ -43,7 +43,7 @@ class Query {
     return {
       logGroupName: this.logGroup,
       startTime: this.from / 1000,
-      endTime: this.now / 1000,
+      endTime: this.to / 1000,
       queryString: this.query,
     }
   }

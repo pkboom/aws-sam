@@ -14,7 +14,7 @@ Resources:
         - x86_64
       Environment:
         Variables:
-          DMARC_LOG_GROUP_NAME: /aws/lambda/dmarc-DmarcFunction-HcpHYxyv78EK
+          DMARC_LOG_GROUP_NAME: /aws/lambda/dmarc-DmarcFunction-JswJhstTvPnZ
       Layers:
         - !Ref Layer
       # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
@@ -34,7 +34,7 @@ Resources:
     Type: AWS::Scheduler::Schedule
     Properties:
       Name: dmarc-schedule
-      ScheduleExpression: 'rate(1 minute)'
+      ScheduleExpression: 'rate(10 minutes)'
       # ScheduleExpression: 'cron(0 0 * * ? *)'
       FlexibleTimeWindow:
         Mode: 'OFF'
