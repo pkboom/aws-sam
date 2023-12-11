@@ -18,7 +18,6 @@ Resources:
 
   ElastiCacheRedisCluster:
     Type: AWS::ElastiCache::ReplicationGroup
-    DependsOn: ElastiCacheSubnetGroup
     Properties:
       ReplicationGroupDescription: !Ref 'AWS::StackName'
       AutoMinorVersionUpgrade: true

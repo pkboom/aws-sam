@@ -1,6 +1,0 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: Sample SAM Template for cf-import-demo
-
-Resources:
-  Bucket:
-    Type: AWS::S3::Bucket

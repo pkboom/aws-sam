@@ -14,45 +14,6 @@ Resources:
         EncryptionType: KMS
         KeyId: alias/aws/kinesis
 
-  # Deliverystream:
-  #   Type: AWS::KinesisFirehose::DeliveryStream
-  #   Properties:
-  #     DeliveryStreamName: !Ref AWS::StackName
-  #     DeliveryStreamType: KinesisStreamAsSource
-  #     AmazonopensearchserviceDestinationConfiguration:
-  #       - IndexName
-  #     KinesisStreamSourceConfiguration:
-  #       KinesisStreamARN: !GetAtt KinesisStream.Arn
-  #       RoleARN: !GetAtt FirehoseDeliveryIAMRole.Arn
-
-  FirehoseDeliveryIAMRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: firehose.amazonaws.com
-            Action: sts:AssumeRole
-
-  FirehoseDeliveryIAMPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: !Sub 'FirehoseDeliveryIAMPolicy-${FirehoseDeliveryIAMRole}'
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Action:
-              - kinesis:DescribeStream
-              - kinesis:GetShardIterator
-              - kinesis:GetRecords
-            Resource: !GetAtt KinesisStream.Arn
-      Roles:
-        - !Ref FirehoseDeliveryIAMRole
-    DependsOn: KinesisStream
-
 Outputs:
   KinesisStreamName:
     Value: !Ref KinesisStream

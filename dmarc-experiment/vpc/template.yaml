@@ -18,15 +18,15 @@ Parameters:
     Type: String
     Default: 10.8.20.0/24
 
-  createNatGateway:
+  CreateNatGateway:
     Type: String
     Default: 'true'
     AllowedValues:
-      - true
-      - false
+      - 'true'
+      - 'false'
 
 Conditions:
-  EnabledNatGateway: !Equals [!Ref createNatGateway, 'true']
+  NatGatewayEnabled: !Equals [!Ref CreateNatGateway, 'true']
 
 Resources:
   VPC:
@@ -109,22 +109,20 @@ Resources:
 
   ElasticIP:
     Type: AWS::EC2::EIP
-    Condition: EnabledNatGateway
+    Condition: NatGatewayEnabled
     Properties:
       Domain: vpc
 
   NatGateway:
     Type: AWS::EC2::NatGateway
-    Condition: EnabledNatGateway
-    DependsOn: ElasticIP
+    Condition: NatGatewayEnabled
     Properties:
       SubnetId: !Ref PublicSubnet
       AllocationId: !GetAtt ElasticIP.AllocationId
 
   RouteNatGateway:
     Type: AWS::EC2::Route
-    DependsOn: NatGateway
-    Condition: EnabledNatGateway
+    Condition: NatGatewayEnabled
     Properties:
       DestinationCidrBlock: '0.0.0.0/0'
       NatGatewayId: !Ref NatGateway

@@ -12,6 +12,7 @@
   "type": "module",
   "dependencies": {
     "@aws-sdk/client-cloudwatch-logs": "^3.470.0",
-    "@aws-sdk/client-ses": "^3.470.0"
+    "@aws-sdk/client-ses": "^3.470.0",
+    "axios": ">=0.21.1"
   }
 }
