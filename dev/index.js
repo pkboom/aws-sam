@@ -2,7 +2,7 @@ import { args } from './indexArguments.js'
 import { execSync } from 'child_process'
 
 const run = async () => {
-  let options = `--outputValue '${args.outputValue}' --devDir ${args.devDir} --count ${args.count}`
+  let options = `--outputValue ${args.outputValue}`
 
   if (args.command === 'startMessageMoveTaskCommand') {
     options += ` --sourceArn ${args.sourceArn} --destinationArn ${args.destinationArn}`
@@ -10,6 +10,8 @@ const run = async () => {
     options += ` --visibilityTimeout ${args.visibilityTimeout}`
   } else if (args.command === 'deleteLogGroupsCommand') {
     options += ` --confirm ${args.confirm}`
+  } else if (['fillBucketCommand'].includes(args.command)) {
+    options += ` --devDir ${args.devDir}`
   } else if (['sendMessageBatchCommand', 'updateShardCountCommand'].includes(args.command)) {
     options += ` --count ${args.count}`
   } else if (args.command === 'putRetentionPolicyCommand') {

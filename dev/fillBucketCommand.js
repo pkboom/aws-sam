@@ -1,7 +1,9 @@
 import { readdirSync, readFileSync } from 'fs'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import path from 'path'
-import { argv } from './commonArguments.js'
+import yargs from 'yargs/yargs'
+
+const argv = yargs(process.argv.slice(2)).argv
 
 const client = new S3Client({})
 

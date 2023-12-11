@@ -1,5 +1,7 @@
 import { S3Client, ListObjectsV2Command, DeleteObjectsCommand } from '@aws-sdk/client-s3'
-import { argv } from './commonArguments.js'
+import yargs from 'yargs/yargs'
+
+const argv = yargs(process.argv.slice(2)).argv
 
 const client = new S3Client({})
 

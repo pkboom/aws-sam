@@ -1,5 +1,7 @@
-import { argv } from './commonArguments.js'
 import { execSync } from 'child_process'
+import yargs from 'yargs/yargs'
+
+const argv = yargs(process.argv.slice(2)).argv
 
 let command = `aws kinesis list-shards \
 --stream-name ${argv.outputValue} \

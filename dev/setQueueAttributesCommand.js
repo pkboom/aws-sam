@@ -1,5 +1,7 @@
-import { argv } from './commonArguments.js'
 import { execSync } from 'child_process'
+import yargs from 'yargs/yargs'
+
+const argv = yargs(process.argv.slice(2)).argv
 
 let attributes = {
   VisibilityTimeout: '' + argv.visibilityTimeout,
