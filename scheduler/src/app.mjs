@@ -4,8 +4,6 @@ import Query from './Query.js'
 export const handler = async (event, context) => {
   let scheduleLogGroupName = `/aws/lambda/${context.functionName}`
 
-  console.log(`scheduleLogGroupName: ${scheduleLogGroupName}`)
-
   let now = new Date().getTime()
 
   let yesterday = new Date(now - 1000 * 60 * 60 * 24).getTime()
@@ -15,14 +13,16 @@ export const handler = async (event, context) => {
       .setFrom(yesterday)
       .setTo(now)
       .setLogGroup(process.env.DMARC_LOG_GROUP_NAME)
-      .setQuery(dmarcQuery())
+      .setQuery(query())
       .run()
 
-    console.log(result)
+    let body = ['Dmarc Processing', 'Period: 1 day', result]
 
-    let body = [`Period: 1 day`, result].join('\n')
+    result = await new Query().setFrom(yesterday).setTo(now).setLogGroup(scheduleLogGroupName).setQuery(query()).run()
 
-    await new Email().setSubject('Dmarc processing').setBody(body).send()
+    body = body.concat('===\n', 'Scheduler', 'Period: 1 day', result)
+
+    await new Email().setSubject('Dmarc processing').setBody(body.join('\n')).send()
 
     return {
       statusCode: 200,
@@ -34,7 +34,7 @@ export const handler = async (event, context) => {
   }
 }
 
-function dmarcQuery() {
+function query() {
   return `
 filter @type = "REPORT"
 | stats 

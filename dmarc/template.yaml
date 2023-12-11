@@ -92,16 +92,6 @@ Resources:
     Metadata:
       BuildMethod: nodejs18.x
 
-  # https://github.com/aws/serverless-application-model/issues/1216#issuecomment-546014606
-  # Make sure a log group with the same name doesn't exist.
-  LogGroup:
-    Type: AWS::Logs::LogGroup
-    DependsOn:
-      - DmarcFunction
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${DmarcFunction}
-      RetentionInDays: 7
-
   # https://www.youtube.com/watch?v=lHWrAAzoxJA&ab_channel=BeABetterDev
   FunctionErrorAlarm:
     Type: AWS::CloudWatch::Alarm

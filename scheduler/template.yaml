@@ -74,11 +74,3 @@ Resources:
         - nodejs18.x
     Metadata:
       BuildMethod: nodejs18.x
-
-  LogGroup:
-    Type: AWS::Logs::LogGroup
-    DependsOn:
-      - ScheduleFunction
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${ScheduleFunction}
-      RetentionInDays: 7

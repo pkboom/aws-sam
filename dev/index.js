@@ -9,7 +9,7 @@ const run = async () => {
   } else if (args.command === 'setQueueAttributes') {
     options += ` --visibilityTimeout ${args.visibilityTimeout}`
   } else if (args.command === 'deleteLogGroups') {
-    options += ` --visibilityTimeout ${args.visibilityTimeout}`
+    options += ` --confirm ${args.confirm}`
   } else if (args.command === 'verifyEmailIdentity') {
     options += ` --email ${args.email}`
   } else {
