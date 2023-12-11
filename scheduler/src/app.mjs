@@ -19,7 +19,7 @@ export const handler = async (event, context) => {
 
     // let body = await log.getQueryResults()
 
-    new Email().setSubject('Dmarc processing').setBody(body()).send()
+    new Email().setSubject('Dmarc processing').setBody(dmarcBody()).send()
 
     return {
       statusCode: 200,
@@ -31,11 +31,11 @@ export const handler = async (event, context) => {
   }
 }
 
-async function body() {
+async function dmarcBody() {
   let billedDurationResult = await billedDuration()
   let maxMemoryResult = await maxMemory()
 
-  return ['Billed duration of dmarc processing', billedDurationResult, 'Max memory used of dmarc processing', maxMemoryResult].join('\n')
+  return ['Billed duration', billedDurationResult, '===', 'Max memory used', maxMemoryResult].join('\n')
 }
 
 async function billedDuration() {
