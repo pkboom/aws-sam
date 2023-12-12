@@ -1,11 +1,11 @@
 import { input, confirm } from '@inquirer/prompts'
 import autocomplete from 'inquirer-autocomplete-standalone'
 import fuzzy from 'fuzzy'
-import fs from 'fs'
-import { readdirSync } from 'fs'
+import { readdirSync, readFileSync, existsSync } from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { execSync } from 'child_process'
+import toml from 'toml'
 
 async function search(options, input = '') {
   let results = await new Promise(resolve => {
@@ -27,8 +27,7 @@ let answers = { devDir }
 answers['command'] = await autocomplete({
   message: 'What do you want to do?',
   source: async (input = '') => {
-    let commands = fs
-      .readdirSync(devDir)
+    let commands = readdirSync(devDir)
       .filter(file => file.includes('Command'))
       .map(file => file.replace('.js', ''))
       .sort()
@@ -64,14 +63,20 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
   })
 } else {
   // These commands need a stack name.
-  let stackName = await autocomplete({
+  answers['stackName'] = await autocomplete({
     message: 'What is the stack name?',
     source: async (input = '') => {
       let stacks = readdirSync(path.join(devDir, '..'), { withFileTypes: true })
         .filter(dir => dir.isDirectory())
         .map(dir => dir.name)
         .filter(dir => !dir.startsWith('.'))
-        .filter(dir => !['dev', 'node_modules'].includes(dir))
+        .filter(dir => !['dev', 'node_modules', 'data'].includes(dir))
+
+      if (existsSync(path.join(devDir, '..', 'samconfig.toml'))) {
+        let config = toml.parse(readFileSync(path.join(devDir, '..', 'samconfig.toml')))
+
+        stacks.push(config.default.global.parameters.stack_name)
+      }
 
       return await search(stacks, input)
     },
@@ -80,7 +85,9 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
   let stackOutputs
 
   try {
-    stackOutputs = JSON.parse(execSync(`sam list stack-outputs --stack-name ${stackName} --output json`).toString())
+    stackOutputs = JSON.parse(
+      execSync(`sam list stack-outputs --stack-name ${answers['stackName']} --output json`).toString(),
+    )
   } catch (error) {
     throw new Error('You need to deploy the stack first.')
   }
