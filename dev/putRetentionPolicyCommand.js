@@ -3,7 +3,7 @@ import yargs from 'yargs/yargs'
 
 const argv = yargs(process.argv.slice(2)).argv
 
-let command = `aws logs put-retention-policy --log-group-name ${argv.logGroupName} --retention-in-days ${argv.retentionInDays}`
+let command = `aws logs put-retention-policy --log-group-name ${argv.value} --retention-in-days ${argv.value2}`
 
 console.log(command)
 

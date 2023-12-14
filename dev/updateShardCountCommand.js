@@ -4,7 +4,7 @@ import yargs from 'yargs/yargs'
 const argv = yargs(process.argv.slice(2)).argv
 
 let command = `aws kinesis update-shard-count \
---stream-name ${argv.outputValue} \
+--stream-name ${argv.value} \
 --scaling-type UNIFORM_SCALING \
 --target-shard-count ${argv.count}`
 

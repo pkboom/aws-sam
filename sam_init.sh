@@ -24,19 +24,13 @@ mv hello-world src
 sed -i '' -e 's/hello-world/src/' template.yaml
 sed -i '' -E -e '/^(# |  #).*/d' template.yaml
 sed -i '' -E -e 's/# .*//g' template.yaml
-sed -i '' -E -e 's/Timeout:.*/Timeout: 60/g' template.yaml
+sed -i '' -E -e 's/Timeout:.*/Timeout: 10/g' template.yaml
 
 sed -i '' -E -e '/^(\/\*| \*).*/d' src/app.mjs
 sed -i '' -E -e '/^$/d' src/app.mjs
 
 # Empty README.md
 echo '' >README.md
-
-# Create a layout
-mkdir layout
-cd layout
-npm init -y
-sed -i '' -e 's/"license": "ISC"/"license": "ISC",\n  "type": "module"/g' package.json
 
 # Insert "type": "module" to package.json
 cd ../src

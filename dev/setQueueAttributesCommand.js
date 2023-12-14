@@ -10,7 +10,7 @@ let attributes = {
 // https://awscli.amazonaws.com/v2/documentation/api/latest/reference/sqs/set-queue-attributes.html
 let command = `
 aws sqs set-queue-attributes \
---queue-url ${argv.outputValue} \
+--queue-url ${argv.value} \
 --attributes '${JSON.stringify(attributes)}'
 `
 

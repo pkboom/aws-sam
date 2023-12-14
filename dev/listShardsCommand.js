@@ -4,7 +4,7 @@ import yargs from 'yargs/yargs'
 const argv = yargs(process.argv.slice(2)).argv
 
 let command = `aws kinesis list-shards \
---stream-name ${argv.outputValue} \
+--stream-name ${argv.value} \
 --exclusive-start-shard-id shardId-000000000000
 `
 

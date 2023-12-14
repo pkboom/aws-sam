@@ -1,20 +1,14 @@
-import { SQSClient, PurgeQueueCommand } from '@aws-sdk/client-sqs'
+import { execSync } from 'child_process'
 import yargs from 'yargs/yargs'
 
 const argv = yargs(process.argv.slice(2)).argv
 
-const client = new SQSClient({})
+let command = `aws sqs purge-queue --queue-url ${argv.value}`
 
-const run = async () => {
-  let input = {
-    QueueUrl: argv.outputValue,
-  }
+console.log(command)
 
-  let command = new PurgeQueueCommand(input)
+execSync(command, {
+  stdio: 'inherit',
+})
 
-  let response = await client.send(command)
-
-  console.log(response)
-}
-
-run()
+console.log('Purged!')

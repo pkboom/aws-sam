@@ -10,7 +10,7 @@ const run = async () => {
 
   while (isTruncated) {
     let command = new ListObjectsV2Command({
-      Bucket: argv.outputValue,
+      Bucket: argv.value,
       // MaxKeys: 3,
     })
 
@@ -29,7 +29,7 @@ const run = async () => {
     console.log(objects)
 
     command = new DeleteObjectsCommand({
-      Bucket: argv.outputValue,
+      Bucket: argv.value,
       Delete: {
         Objects: objects,
       },
@@ -38,7 +38,7 @@ const run = async () => {
     await client.send(command)
   }
 
-  console.log('Deleted')
+  console.log('Emptied!')
 }
 
 run()

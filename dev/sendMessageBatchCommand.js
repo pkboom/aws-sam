@@ -21,7 +21,7 @@ const run = async () => {
     }
 
     let input = {
-      QueueUrl: argv.outputValue,
+      QueueUrl: argv.value,
       Entries: entries,
     }
 

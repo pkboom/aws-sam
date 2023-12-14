@@ -18,7 +18,7 @@ const run = async () => {
         },
       ],
     }),
-    QueueUrl: argv.outputValue,
+    QueueUrl: argv.value,
   }
   let command = new SendMessageCommand(input)
 

@@ -36,17 +36,33 @@ answers['command'] = await autocomplete({
   },
 })
 
+let message, message2
+
+if (['verifyEmailIdentityCommand'].includes(answers.command)) {
+  message = 'Email to verify?'
+} else if (['deleteLayerVersionCommand'].includes(answers.command)) {
+  message = 'Layer name?'
+  message2 = 'Version number?'
+} else if (['deleteLogGroupsCommand'].includes(answers.command)) {
+  message = 'Are you sure to delete all log groups?'
+}
+
 if (['deleteLogGroupsCommand'].includes(answers.command)) {
-  answers['confirm'] = await confirm({
-    message: 'Are you sure to delete all log groups?',
-    default: false,
+  answers['value'] = await confirm({
+    message,
   })
-} else if (['verifyEmailIdentityCommand'].includes(answers.command)) {
-  answers['email'] = await input({
-    message: 'Email to verify?',
+} else if (['deleteLayerVersionCommand', 'verifyEmailIdentityCommand'].includes(answers.command)) {
+  answers['value'] = await input({
+    message,
   })
+
+  if (message2) {
+    answers['value2'] = await input({
+      message: message2,
+    })
+  }
 } else if (['putRetentionPolicyCommand'].includes(answers.command)) {
-  answers['logGroupName'] = await autocomplete({
+  answers['value'] = await autocomplete({
     message: 'Log group name?',
     source: async (input = '') => {
       let logGroups = JSON.parse(execSync('aws logs describe-log-groups').toString()).logGroups.map(
@@ -57,7 +73,7 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
     },
   })
 
-  answers['retentionInDays'] = await input({
+  answers['value2'] = await input({
     message: 'Retion in days',
     default: 7,
   })
@@ -92,7 +108,7 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
     throw new Error('You need to deploy the stack first.')
   }
 
-  if (['sendMessageBatch', 'sendMessageCommand'].includes(answers.command)) {
+  if (['sendMessageBatch', 'sendMessageCommand', 'purgeQueueCommand'].includes(answers.command)) {
     console.log('It needs a url.')
   }
 
@@ -130,7 +146,7 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
       },
     })
 
-    answers['outputValue'] = stackOutputs.find(output => output.OutputKey === answers['outputKey'])?.OutputValue
+    answers['value'] = stackOutputs.find(output => output.OutputKey === answers['outputKey'])?.OutputValue
   }
 }
 

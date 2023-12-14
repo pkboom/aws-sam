@@ -7,7 +7,7 @@ let command = `aws logs describe-log-groups`
 
 let logGroups = JSON.parse(execSync(command).toString()).logGroups.map(logGroup => logGroup.logGroupName)
 
-if (argv.confirm) {
+if (argv.value === 'true') {
   logGroups = logGroups.forEach(logGroup => {
     command = `aws logs delete-log-group --log-group-name ${logGroup}`
 
@@ -16,9 +16,9 @@ if (argv.confirm) {
     execSync(command, {
       stdio: 'inherit',
     })
-
-    console.log('All deleted.')
   })
+
+  console.log('All deleted!')
 } else {
   console.log('We are not deleting the log groups.')
 
