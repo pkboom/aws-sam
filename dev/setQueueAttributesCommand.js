@@ -4,7 +4,7 @@ import yargs from 'yargs/yargs'
 const argv = yargs(process.argv.slice(2)).argv
 
 let attributes = {
-  VisibilityTimeout: '' + argv.visibilityTimeout,
+  VisibilityTimeout: '' + argv.value2,
 }
 
 // https://awscli.amazonaws.com/v2/documentation/api/latest/reference/sqs/set-queue-attributes.html

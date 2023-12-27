@@ -5,18 +5,28 @@ const argv = yargs(process.argv.slice(2)).argv
 
 const client = new SQSClient({})
 
-console.log(argv)
+function s3Message() {
+  return {
+    Records: [
+      {
+        s3: {
+          object: {
+            key: 'email/whisnantstrategies.eml',
+          },
+        },
+      },
+    ],
+  }
+}
 
 const run = async () => {
   let entries = []
 
-  for (let i = 0; i < argv.count; i++) {
+  for (let i = 0; i < argv.value2; i++) {
     for (let j = 0; j < 10; j++) {
       entries.push({
         Id: j.toString(),
-        MessageBody: JSON.stringify({
-          eml: 'google.eml',
-        }),
+        MessageBody: JSON.stringify(s3Message()),
       })
     }
 

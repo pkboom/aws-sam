@@ -5,26 +5,36 @@ const argv = yargs(process.argv.slice(2)).argv
 
 const client = new SQSClient({})
 
-const run = async () => {
-  let input = {
-    MessageBody: JSON.stringify({
-      Records: [
-        {
-          s3: {
-            object: {
-              key: 'google.eml',
-            },
+function s3Message() {
+  return {
+    Records: [
+      {
+        s3: {
+          object: {
+            key: argv.value3,
           },
         },
-      ],
-    }),
+      },
+    ],
+  }
+}
+
+const run = async () => {
+  let input = {
+    MessageBody: JSON.stringify(s3Message()),
     QueueUrl: argv.value,
   }
   let command = new SendMessageCommand(input)
 
-  let response = await client.send(command)
+  for (let i = 0; i < argv.value2; i++) {
+    try {
+      await client.send(command)
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
-  console.log(response)
+  console.log(`Sent ${argv.value2} messages.`)
 }
 
 run()

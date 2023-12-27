@@ -82,14 +82,14 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
   answers['stackName'] = await autocomplete({
     message: 'What is the stack name?',
     source: async (input = '') => {
-      let stacks = readdirSync(path.join(devDir, '..'), { withFileTypes: true })
+      let stacks = readdirSync(process.cwd(), { withFileTypes: true })
         .filter(dir => dir.isDirectory())
         .map(dir => dir.name)
         .filter(dir => !dir.startsWith('.'))
-        .filter(dir => !['dev', 'node_modules', 'data'].includes(dir))
+        .filter(dir => !['dev', 'node_modules', 'data', 'data_backup'].includes(dir))
 
-      if (existsSync(path.join(devDir, '..', 'samconfig.toml'))) {
-        let config = toml.parse(readFileSync(path.join(devDir, '..', 'samconfig.toml')))
+      if (existsSync(path.join(process.cwd(), 'samconfig.toml'))) {
+        let config = toml.parse(readFileSync(path.join(process.cwd(), 'samconfig.toml')))
 
         stacks.push(config.default.global.parameters.stack_name)
       }
@@ -108,12 +108,12 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
     throw new Error('You need to deploy the stack first.')
   }
 
-  if (['sendMessageBatch', 'sendMessageCommand', 'purgeQueueCommand'].includes(answers.command)) {
+  if (['sendMessageBatchCommand', 'sendMessageCommand', 'purgeQueueCommand'].includes(answers.command)) {
     console.log('It needs a url.')
   }
 
   if (['startMessageMoveTaskCommand'].includes(answers.command)) {
-    answers['sourceArnKey'] = await autocomplete({
+    answers['value'] = await autocomplete({
       message: 'What is the sourceArn?',
       source: async (input = '') => {
         let outputKeys = stackOutputs.map(output => output.OutputKey)
@@ -122,9 +122,9 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
       },
     })
 
-    answers['sourceArn'] = stackOutputs.find(output => output.OutputKey === answers['sourceArnKey'])?.OutputValue
+    answers['sourceArn'] = stackOutputs.find(output => output.OutputKey === answers['value'])?.OutputValue
 
-    answers['destinationArnKey'] = await autocomplete({
+    answers['value2'] = await autocomplete({
       message: 'What is the destinationArn?',
       source: async (input = '') => {
         let outputKeys = stackOutputs.map(output => output.OutputKey)
@@ -133,9 +133,7 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
       },
     })
 
-    answers['destinationArn'] = stackOutputs.find(
-      output => output.OutputKey === answers['destinationArnKey'],
-    )?.OutputValue
+    answers['destinationArn'] = stackOutputs.find(output => output.OutputKey === answers['value2'])?.OutputValue
   } else {
     answers['outputKey'] = await autocomplete({
       message: 'What is the outputKey?',
@@ -150,15 +148,21 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
   }
 }
 
-if (['sendMessageBatch', 'updateShardCountCommand'].includes(answers.command)) {
-  answers['count'] = await input({
+if (['sendMessageCommand', 'sendMessageBatchCommand'].includes(answers.command)) {
+  answers['value2'] = await input({
     message: 'Count?',
     default: 1,
   })
 }
 
+if (['sendMessageCommand', 'sendMessageBatchCommand'].includes(answers.command)) {
+  answers['value3'] = await input({
+    message: 'key?',
+  })
+}
+
 if (['setQueueAttributesCommand'].includes(answers.command)) {
-  answers['visibilityTimeout'] = await input({
+  answers['value2'] = await input({
     message: 'VisibilityTimeout?',
     default: 60,
   })

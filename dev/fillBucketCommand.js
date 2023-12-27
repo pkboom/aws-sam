@@ -7,7 +7,7 @@ const argv = yargs(process.argv.slice(2)).argv
 
 const client = new S3Client({})
 
-let dataPath = path.join(argv.devDir, '..', 'data')
+let dataPath = path.join(process.cwd(), 'data')
 
 let files = readdirSync(dataPath)
 
