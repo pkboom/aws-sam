@@ -7,7 +7,7 @@ let command = `aws logs describe-log-groups`
 
 let logGroups = JSON.parse(execSync(command).toString()).logGroups.map(logGroup => logGroup.logGroupName)
 
-if (argv.value === 'true') {
+if (argv.value1 === 'true') {
   logGroups = logGroups.forEach(logGroup => {
     command = `aws logs delete-log-group --log-group-name ${logGroup}`
 

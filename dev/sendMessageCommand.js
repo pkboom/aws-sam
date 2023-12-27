@@ -22,7 +22,7 @@ function s3Message() {
 const run = async () => {
   let input = {
     MessageBody: JSON.stringify(s3Message()),
-    QueueUrl: argv.value,
+    QueueUrl: argv.value1,
   }
   let command = new SendMessageCommand(input)
 

@@ -10,7 +10,7 @@ const run = async () => {
 
   while (isTruncated) {
     let command = new ListObjectsV2Command({
-      Bucket: argv.value,
+      Bucket: argv.value1,
       // MaxKeys: 3,
     })
 
@@ -29,7 +29,7 @@ const run = async () => {
     console.log(objects)
 
     command = new DeleteObjectsCommand({
-      Bucket: argv.value,
+      Bucket: argv.value1,
       Delete: {
         Objects: objects,
       },

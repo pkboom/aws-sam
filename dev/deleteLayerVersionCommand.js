@@ -7,7 +7,7 @@ let command
 
 for (let i = argv.value2; i > 0; i--) {
   command = `aws lambda delete-layer-version \
---layer-name ${argv.value} \
+--layer-name ${argv.value1} \
 --version-number ${i}
 `
 

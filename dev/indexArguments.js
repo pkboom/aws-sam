@@ -48,11 +48,11 @@ if (['verifyEmailIdentityCommand'].includes(answers.command)) {
 }
 
 if (['deleteLogGroupsCommand'].includes(answers.command)) {
-  answers['value'] = await confirm({
+  answers['value1'] = await confirm({
     message,
   })
 } else if (['deleteLayerVersionCommand', 'verifyEmailIdentityCommand'].includes(answers.command)) {
-  answers['value'] = await input({
+  answers['value1'] = await input({
     message,
   })
 
@@ -62,7 +62,7 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
     })
   }
 } else if (['putRetentionPolicyCommand'].includes(answers.command)) {
-  answers['value'] = await autocomplete({
+  answers['value1'] = await autocomplete({
     message: 'Log group name?',
     source: async (input = '') => {
       let logGroups = JSON.parse(execSync('aws logs describe-log-groups').toString()).logGroups.map(
@@ -113,7 +113,7 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
   }
 
   if (['startMessageMoveTaskCommand'].includes(answers.command)) {
-    answers['value'] = await autocomplete({
+    answers['value1'] = await autocomplete({
       message: 'What is the sourceArn?',
       source: async (input = '') => {
         let outputKeys = stackOutputs.map(output => output.OutputKey)
@@ -122,7 +122,7 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
       },
     })
 
-    answers['sourceArn'] = stackOutputs.find(output => output.OutputKey === answers['value'])?.OutputValue
+    answers['sourceArn'] = stackOutputs.find(output => output.OutputKey === answers['value1'])?.OutputValue
 
     answers['value2'] = await autocomplete({
       message: 'What is the destinationArn?',
@@ -144,7 +144,7 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
       },
     })
 
-    answers['value'] = stackOutputs.find(output => output.OutputKey === answers['outputKey'])?.OutputValue
+    answers['value1'] = stackOutputs.find(output => output.OutputKey === answers['outputKey'])?.OutputValue
   }
 }
 
