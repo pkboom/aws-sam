@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 # It needs an app name as an argument
 if [ $# -lt 1 ]; then
   echo >&2 "
@@ -33,6 +35,6 @@ sed -i '' -E -e '/^$/d' src/app.mjs
 echo '' >README.md
 
 # Insert "type": "module" to package.json
-cd ../src
+cd src
 sed -i '' -e 's/"license": "MIT"/"license": "MIT",\n  "type": "module"/g' package.json
 npm i

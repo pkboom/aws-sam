@@ -36,24 +36,24 @@ answers['command'] = await autocomplete({
   },
 })
 
-let message, message2
+let message1, message2, default1
 
 if (['verifyEmailIdentityCommand'].includes(answers.command)) {
-  message = 'Email to verify?'
+  message1 = 'Email to verify?'
 } else if (['deleteLayerVersionCommand'].includes(answers.command)) {
-  message = 'Layer name?'
+  message1 = 'Layer name?'
   message2 = 'Version number?'
 } else if (['deleteLogGroupsCommand'].includes(answers.command)) {
-  message = 'Are you sure to delete all log groups?'
+  message1 = 'Are you sure to delete all log groups?'
 }
 
 if (['deleteLogGroupsCommand'].includes(answers.command)) {
   answers['value1'] = await confirm({
-    message,
+    message: message1,
   })
 } else if (['deleteLayerVersionCommand', 'verifyEmailIdentityCommand'].includes(answers.command)) {
   answers['value1'] = await input({
-    message,
+    message: message1,
   })
 
   if (message2) {
@@ -149,22 +149,37 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
 }
 
 if (['sendMessageCommand', 'sendMessageBatchCommand'].includes(answers.command)) {
+  message1 = 'Count?'
+  default1 = 1
+} else if (['setQueueAttributesCommand'].includes(answers.command)) {
+  message1 = 'VisibilityTimeout?'
+  default1 = 60
+} else if (['updateFunctionConfigurationCommand'].includes(answers.command)) {
+  message1 = 'Memory size?'
+}
+
+if (
+  [
+    'sendMessageCommand',
+    'sendMessageBatchCommand',
+    'setQueueAttributesCommand',
+    'updateFunctionConfigurationCommand',
+  ].includes(answers.command)
+) {
   answers['value2'] = await input({
-    message: 'Count?',
-    default: 1,
+    message: message1,
+    default: default1,
   })
 }
 
 if (['sendMessageCommand', 'sendMessageBatchCommand'].includes(answers.command)) {
-  answers['value3'] = await input({
-    message: 'key?',
-  })
-}
+  answers['value3'] = await autocomplete({
+    message: 'Key?',
+    source: async (input = '') => {
+      let emls = ['email/biggest', 'email/whisnantstrategies.eml', 'email/118']
 
-if (['setQueueAttributesCommand'].includes(answers.command)) {
-  answers['value2'] = await input({
-    message: 'VisibilityTimeout?',
-    default: 60,
+      return await search(emls, input)
+    },
   })
 }
 
