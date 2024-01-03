@@ -36,6 +36,10 @@ answers['command'] = await autocomplete({
   },
 })
 
+if (['fillBucketCommand'].includes(answers.command)) {
+  console.log('- It needs data folder in current directory.')
+}
+
 let message1, message2, default1
 
 if (['verifyEmailIdentityCommand'].includes(answers.command)) {
@@ -109,7 +113,7 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
   }
 
   if (['sendMessageBatchCommand', 'sendMessageCommand', 'purgeQueueCommand'].includes(answers.command)) {
-    console.log('It needs a url.')
+    console.log('- It needs a url.')
   }
 
   if (['startMessageMoveTaskCommand'].includes(answers.command)) {
