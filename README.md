@@ -192,7 +192,7 @@ aws cloudformation describe-stacks --query 'Stacks[].Outputs'
 # query outputkey=SqsLambdaSqs
 aws cloudformation describe-stacks --query 'Stacks[].Outputs[?OutputKey==`SqsLambdaSqs`]'
 
-aws cloudformation describe-stacks --query 'Stacks[].Outputs[?OutputKey==`SqsLambdaSqs`].OutputValue[]'
+aws cloudformation describe-stacks --stack-name <STACK_NAME> --query 'Stacks[].Outputs[?OutputKey==`SqsLambdaSqs`].OutputValue[]  --output text'
 ```
 
 # SQS
