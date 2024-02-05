@@ -3,7 +3,7 @@ import yargs from 'yargs/yargs'
 
 const argv = yargs(process.argv.slice(2)).argv
 
-const client = new SQSClient({})
+const client = new SQSClient()
 
 function s3Message() {
   return {
