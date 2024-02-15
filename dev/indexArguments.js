@@ -37,34 +37,25 @@ answers['command'] = await autocomplete({
 })
 
 if (['fillBucketCommand'].includes(answers.command)) {
-  console.log('- It needs data folder in current directory.')
+  console.log('- It needs `data` folder in the root directory.')
 }
-
-let message1, message2, default1
 
 if (['verifyEmailIdentityCommand'].includes(answers.command)) {
-  message1 = 'Email to verify?'
-} else if (['deleteLayerVersionCommand'].includes(answers.command)) {
-  message1 = 'Layer name?'
-  message2 = 'Version number?'
-} else if (['deleteLogGroupsCommand'].includes(answers.command)) {
-  message1 = 'Are you sure to delete all log groups?'
-}
-
-if (['deleteLogGroupsCommand'].includes(answers.command)) {
-  answers['value1'] = await confirm({
-    message: message1,
-  })
-} else if (['deleteLayerVersionCommand', 'verifyEmailIdentityCommand'].includes(answers.command)) {
   answers['value1'] = await input({
-    message: message1,
+    message: 'Email?',
+  })
+} else if (['deleteLayerVersionCommand'].includes(answers.command)) {
+  answers['value1'] = await input({
+    message: 'Layer name?',
   })
 
-  if (message2) {
-    answers['value2'] = await input({
-      message: message2,
-    })
-  }
+  answers['value2'] = await input({
+    message: 'Version number?',
+  })
+} else if (['deleteLogGroupsCommand'].includes(answers.command)) {
+  answers['value1'] = await confirm({
+    message: 'Are you sure to delete all log groups?',
+  })
 } else if (['putRetentionPolicyCommand'].includes(answers.command)) {
   answers['value1'] = await autocomplete({
     message: 'Log group name?',
@@ -153,30 +144,11 @@ if (['deleteLogGroupsCommand'].includes(answers.command)) {
 }
 
 if (['sendMessageCommand', 'sendMessageBatchCommand'].includes(answers.command)) {
-  message1 = 'Count?'
-  default1 = 1
-} else if (['setQueueAttributesCommand'].includes(answers.command)) {
-  message1 = 'VisibilityTimeout?'
-  default1 = 60
-} else if (['updateFunctionConfigurationCommand'].includes(answers.command)) {
-  message1 = 'Memory size?'
-}
-
-if (
-  [
-    'sendMessageCommand',
-    'sendMessageBatchCommand',
-    'setQueueAttributesCommand',
-    'updateFunctionConfigurationCommand',
-  ].includes(answers.command)
-) {
   answers['value2'] = await input({
-    message: message1,
-    default: default1,
+    message: 'Count?',
+    default: 1,
   })
-}
 
-if (['sendMessageCommand', 'sendMessageBatchCommand'].includes(answers.command)) {
   answers['value3'] = await autocomplete({
     message: 'Key?',
     source: async (input = '') => {
@@ -184,6 +156,19 @@ if (['sendMessageCommand', 'sendMessageBatchCommand'].includes(answers.command))
 
       return await search(emls, input)
     },
+  })
+} else if (['setQueueAttributesCommand'].includes(answers.command)) {
+  answers['value2'] = await input({
+    message: 'VisibilityTimeout?',
+    default: 60,
+  })
+} else if (['updateFunctionConfigurationCommand'].includes(answers.command)) {
+  answers['value2'] = await input({
+    message: 'Memory size?',
+  })
+} else if (['putObjectCommand'].includes(answers.command)) {
+  answers['value2'] = await input({
+    message: 'Key?(full path)',
   })
 }
 
