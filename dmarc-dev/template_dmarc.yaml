@@ -1,0 +1,198 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: dmarc processor
+
+Parameters:
+  Env:
+    Type: String
+    Default: dev
+  DmarcTimeout:
+    Type: Number
+    Default: 120
+  RecordTimeout:
+    Type: Number
+    Default: 330
+
+Mappings:
+  EnvMap:
+    dev:
+      DarmcBucketName: inboxmonster-dev-dmarc-isolated-us-east-2-datalake
+      DmarcQueueUrl: https://sqs.us-east-2.amazonaws.com/524978277775/inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email
+      DmarcQueueArn: arn:aws:sqs:us-east-2:524978277775:inboxmonster-dev-dmarc-isolated-us-east-2-datalake-email
+      RecordQueueArn: arn:aws:sqs:us-east-2:524978277775:inboxmonster-dev-dmarc-isolated-us-east-2-datalake-records
+      DeadLetterQueueUrl: https://sqs.us-east-2.amazonaws.com/524978277775/inboxmonster-dev-dmarc-isolated-us-east-2-dead-letter-datalake-email
+      SubnetIds: subnet-04e2da7ef878971a5,subnet-08294e103b50c7144
+      SecurityGroupIds: sg-0814a05a7dec5c820
+      DomainEndpoint: https://vpc-dev-dmarc-isolated-zng4z3u5euzbtgqyiesr3v5bym.us-east-2.es.amazonaws.com
+      DmarcTableName: inboxmonster-dev-dmarc-isolated-us-east-2-records
+      Alarm: false
+      MaximumBatchingWindowInSeconds: 3
+    prod:
+      DarmcBucketName: inboxmonster-prod-dmarc-us-east-2-datalake
+      DmarcQueueUrl: https://sqs.us-east-2.amazonaws.com/787769859576/inboxmonster-prod-dmarc-us-east-2-datalake-email
+      DmarcQueueArn: arn:aws:sqs:us-east-2:787769859576:inboxmonster-prod-dmarc-us-east-2-datalake-email
+      RecordQueueArn: arn:aws:sqs:us-east-2:787769859576:inboxmonster-prod-dmarc-us-east-2-datalake-records
+      DeadLetterQueueUrl: https://sqs.us-east-2.amazonaws.com/787769859576/inboxmonster-prod-dmarc-us-east-2-dead-letter-datalake-email
+      SubnetIds: subnet-04dd8c20abe6078c1,subnet-06ab11ba879fbc492,subnet-0be6535546cc4a2ef
+      SecurityGroupIds: sg-05b17a2ab3393f40f
+      DomainEndpoint: https://vpc-prod-dmarc-f4rt73pqf4rfzfyc3wfyhr2rv4.us-east-2.es.amazonaws.com
+      DmarcTableName: not-yet
+      Alarm: true
+      MaximumBatchingWindowInSeconds: 90
+
+Conditions:
+  IsProd: !Not [!Equals [!Ref Env, dev]]
+
+Resources:
+  DmarcFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Dmarc function
+      CodeUri: src
+      Handler: appDmarc.handler
+      Runtime: nodejs18.x
+      MemorySize: 3700
+      Timeout: !Ref DmarcTimeout
+      AutoPublishAlias: live
+      DeploymentPreference:
+        Enabled: !FindInMap [EnvMap, !Ref Env, Alarm]
+        Type: AllAtOnce
+        Alarms:
+          - Ref: FunctionErrorAlarm
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          BUCKET_NAME: !FindInMap [EnvMap, !Ref Env, DarmcBucketName]
+          DMARC_TABLE_NAME: !FindInMap [EnvMap, !Ref Env, DmarcTableName]
+          DMARC_TIMEOUT: !Ref DmarcTimeout
+          ENV: !Ref Env
+      # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+      Layers:
+        - !Ref DmarcLayer
+      Policies:
+        - S3FullAccessPolicy:
+            BucketName: !FindInMap [EnvMap, !Ref Env, DarmcBucketName]
+        - SESCrudPolicy:
+            IdentityName: '*'
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvMap, !Ref Env, DmarcTableName]
+      VpcConfig:
+        SecurityGroupIds: !Split [',', !FindInMap [EnvMap, !Ref Env, SecurityGroupIds]]
+        SubnetIds: !Split [',', !FindInMap [EnvMap, !Ref Env, SubnetIds]]
+      # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-eventsource.html
+      Events:
+        # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-sqs.html
+        Invoker:
+          Type: SQS
+          Properties:
+            # Enabled: false
+            Queue: !FindInMap [EnvMap, !Ref Env, DmarcQueueArn]
+            BatchSize: 1
+            ScalingConfig:
+              # Scale up or down in half. Minimum: 2
+              MaximumConcurrency: 5
+
+  RecordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Record function
+      CodeUri: src
+      Handler: appRecord.handler
+      Runtime: nodejs18.x
+      MemorySize: 700
+      # It takes 25s to process a record with 10000 dmarc records.
+      # Batch size and batching window should be considered before setting timeout.
+      Timeout: !Ref RecordTimeout
+      AutoPublishAlias: live
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          BUCKET_NAME: !FindInMap [EnvMap, !Ref Env, DarmcBucketName]
+          DOMAIN_ENDPOINT: !FindInMap [EnvMap, !Ref Env, DomainEndpoint]
+          RECOR_TIMEOUT: !Ref RecordTimeout
+          ENV: !Ref Env
+      Layers:
+        - !Ref DmarcLayer
+      Policies:
+        - S3FullAccessPolicy:
+            BucketName: !FindInMap [EnvMap, !Ref Env, DarmcBucketName]
+        - SESCrudPolicy:
+            IdentityName: '*'
+      VpcConfig:
+        SecurityGroupIds: !Split [',', !FindInMap [EnvMap, !Ref Env, SecurityGroupIds]]
+        SubnetIds: !Split [',', !FindInMap [EnvMap, !Ref Env, SubnetIds]]
+      Events:
+        Invoker:
+          Type: SQS
+          Properties:
+            # Enabled: false
+            Queue: !FindInMap [EnvMap, !Ref Env, RecordQueueArn]
+            # https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#events-sqs-eventsource
+            # https://dev.to/frosnerd/understanding-the-aws-lambda-sqs-integration-1981
+            ScalingConfig:
+              MaximumConcurrency: 5
+            # https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting
+            BatchSize: 12
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+            MaximumBatchingWindowInSeconds: !FindInMap [EnvMap, !Ref Env, MaximumBatchingWindowInSeconds]
+
+  DmarcLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      Description: dmarc main layer
+      ContentUri: layer
+      CompatibleRuntimes:
+        - nodejs18.x
+    Metadata:
+      BuildMethod: nodejs18.x
+      BuildArchitecture: x86_64
+
+  # https://www.youtube.com/watch?v=lHWrAAzoxJA&ab_channel=BeABetterDev
+  FunctionErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: IsProd
+    Properties:
+      MetricName: Errors
+      AlarmDescription: Fire alarm if more than 3 errors occur in any 120 second period
+      Namespace: AWS/Lambda
+      Period: 120
+      Statistic: Sum
+      Threshold: 2
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: 1
+      Dimensions:
+        - Name: Resource
+          Value: !Sub '${DmarcFunction}:live'
+        - Name: FunctionName
+          Value: !Ref DmarcFunction
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmNotification
+
+  AlarmNotification:
+    Type: AWS::SNS::Topic
+    Condition: IsProd
+    Properties:
+      Subscription:
+        - Endpoint: keunbae@inboxmonster.com
+          Protocol: email
+      TopicName: dmarc-alarm-notification
+
+Outputs:
+  DmarcFunctionName:
+    Value: !Ref DmarcFunction
+  RecordFunctionName:
+    Value: !Ref RecordFunction
+  DarmcBucketName:
+    Value: !FindInMap [EnvMap, !Ref Env, DarmcBucketName]
+  DmarcQueueUrl:
+    Value: !FindInMap [EnvMap, !Ref Env, DmarcQueueUrl]
+  DeadLetterQueueUrl:
+    Value: !FindInMap [EnvMap, !Ref Env, DeadLetterQueueUrl]
+  DmarcQueueArn:
+    Value: !FindInMap [EnvMap, !Ref Env, DmarcQueueArn]
+  DmarcLayerArn:
+    Value: !Ref DmarcLayer

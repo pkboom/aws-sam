@@ -39,6 +39,16 @@ Resources:
         DmarcBucketName: !GetAtt S3SQS.Outputs.DmarcBucketName
         DmarcQueueArn: !GetAtt S3SQS.Outputs.DmarcQueueArn
 
+  Insight:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: template_insight.yaml
+      Parameters:
+        # Env: !Ref Env
+        # DmarcFunctionName: !GetAtt Dmarc.Outputs.DmarcFunctionName
+        # RecordFunctionName: !GetAtt Dmarc.Outputs.RecordFunctionName
+        # DmarcLayerArn: !GetAtt Dmarc.Outputs.DmarcLayerArn
+
 Outputs:
   PrivateSubnetId:
     Value: !GetAtt VPC.Outputs.PrivateSubnetId

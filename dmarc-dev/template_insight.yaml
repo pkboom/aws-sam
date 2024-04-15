@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: dmarc insight
+
+Parameters:
+  Env:
+    Type: String
+    Default: dev
+  DmarcFunctionName:
+    Type: String
+  RecordFunctionName:
+    Type: String
+  DmarcLayerArn:
+    Type: String
+
+Resources:
+  InsightDmarcFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Insight dmarc function
+      CodeUri: src
+      Handler: insightDmarc.handler
+      Runtime: nodejs18.x
+      Timeout: 120
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          DMARC_FUNCTION_NAME: !Ref DmarcFunctionName
+          ENV: !Ref Env
+      Layers:
+        - !Ref DmarcLayerArn
+      # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+      Policies:
+        - SESCrudPolicy:
+            IdentityName: '*'
+        - Statement:
+            - Sid: InsightDmarcPolicy
+              Effect: Allow
+              Action:
+                - logs:StartQuery
+                - logs:GetQueryResults
+              Resource: '*'
+
+  InsightDmarcSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: insight-dmarc-schedule
+      ScheduleExpression: 'cron(0 0 ? * 2,4,6 *)'
+      FlexibleTimeWindow:
+        Mode: 'FLEXIBLE'
+        MaximumWindowInMinutes: 60
+      Target:
+        Arn: !GetAtt InsightDmarcFunction.Arn
+        RoleArn: !GetAtt ScheduleRole.Arn
+
+  InsightRecordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Insight record function
+      CodeUri: src
+      Handler: insightRecord.handler
+      Runtime: nodejs18.x
+      Timeout: 120
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          RECORD_FUNCTION_NAME: !Ref RecordFunctionName
+          ENV: !Ref Env
+      Layers:
+        - !Ref DmarcLayerArn
+      Policies:
+        - SESCrudPolicy:
+            IdentityName: '*'
+        - Statement:
+            - Sid: InsightRecordPolicy
+              Effect: Allow
+              Action:
+                - logs:StartQuery
+                - logs:GetQueryResults
+              Resource: '*'
+
+  InsightRecordSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: insight-record-schedule
+      ScheduleExpression: 'cron(0 0 ? * 2,4,6 *)'
+      FlexibleTimeWindow:
+        Mode: 'FLEXIBLE'
+        MaximumWindowInMinutes: 60
+      Target:
+        Arn: !GetAtt InsightRecordFunction.Arn
+        RoleArn: !GetAtt ScheduleRole.Arn
+
+  ScheduleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - scheduler.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: ScheduleRolePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'lambda:InvokeFunction'
+                Resource: '*'
