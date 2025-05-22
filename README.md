@@ -299,3 +299,7 @@ PONG
 # Alarm
 
 - When deleting SNS Subscriptions, pending confirmations cannot be deleted. After 3 days, it is automatically deleted by the Amazon SNS team.
+
+# Cost-Saving Strategies for AWS OpenSearch(FinOps): Optimize Performance without Breaking the Bank
+
+https://ramchandra-vadranam.medium.com/cost-saving-strategies-for-aws-opensearch-finops-optimize-performance-without-breaking-the-bank-f87f0bb2ce37
